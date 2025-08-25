@@ -106,6 +106,13 @@ class DatabaseManager {
     // Clear Fake Notes - Removes test data from production environment
     clearFakeNotes() {
         const existingNotes = this.getTable('notes') || [];
+        
+        // Ensure notes is an array before proceeding
+        if (!Array.isArray(existingNotes)) {
+            console.log('⚠️ Notes table not found or invalid, skipping fake notes cleanup');
+            return;
+        }
+        
         const fakeNoteContents = [
             "Great practice today team! Remember to work on those free throws.",
             "Coach, what time is the game on Saturday?",
@@ -193,6 +200,14 @@ class DatabaseManager {
 
         // Get all existing events for migration processing
         const events = this.getTable('events') || [];
+        
+        // Ensure events is an array before proceeding
+        if (!Array.isArray(events)) {
+            console.log('⚠️ Events table not found or invalid, skipping game confirmation migration');
+            localStorage.setItem(this.storagePrefix + 'game_confirmation_migrated', 'true');
+            return;
+        }
+        
         let migrationNeeded = false;
 
         // Process each event to add confirmation status fields
