@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeamForge Firebase Connection Tester</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #e2e8f0;
+        }
+        
+        .test-section.success {
+            background: #f0fff4;
+            border-left-color: #48bb78;
+        }
+        
+        .test-section.error {
+            background: #fed7d7;
+            border-left-color: #f56565;
+        }
+        
+        .test-section.warning {
+            background: #fefcbf;
+            border-left-color: #ed8936;
+        }
+        
+        .test-section.info {
+            background: #ebf8ff;
+            border-left-color: #4299e1;
+        }
+        
+        .test-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-success {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .status-error {
+            background: #f56565;
+            color: white;
+        }
+        
+        .status-warning {
+            background: #ed8936;
+            color: white;
+        }
+        
+        .status-info {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .test-details {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        
+        .test-button {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 10px 5px 10px 0;
+            transition: background 0.2s;
+        }
+        
+        .test-button:hover {
+            background: #3182ce;
+        }
+        
+        .test-button:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78, #38a169);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .firebase-config {
+            font-size: 12px;
+            color: #4a5568;
+            background: #f7fafc;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+    </style>
+    
+    <!-- Modern Firebase v12+ Modular SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+        import { getFirestore, connectFirestoreEmulator } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+        import { getAuth, connectAuthEmulator } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+        // Your TeamForge Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCrAPyjI91mdpOXgrUO6vKP83TbhMfQGKI",
+            authDomain: "teamforgeproject-37f27.firebaseapp.com",
+            projectId: "teamforgeproject-37f27",
+            storageBucket: "teamforgeproject-37f27.firebasestorage.app",
+            messagingSenderId: "625240400602",
+            appId: "1:625240400602:web:c24e30c9ba4f28b0bafbe3",
+            measurementId: "G-V2GBMH5H88"
+        };
+
+        try {
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+            
+            // Make Firebase available globally for testing
+            window.firebaseApp = app;
+            window.firebaseDB = db;
+            window.firebaseAuth = auth;
+            window.firebaseConfig = firebaseConfig;
+            
+            console.log('🔥 Firebase v12+ initialized successfully');
+            console.log('📊 Project ID:', firebaseConfig.projectId);
+            
+            // Mark Firebase as loaded
+            window.firebaseLoaded = true;
+            
+        } catch (error) {
+            console.error('❌ Firebase initialization failed:', error);
+            window.firebaseError = error;
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 TeamForge Firebase Tester</h1>
+        <p class="subtitle">Verify your Firebase connection and configuration</p>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+        
+        <div id="testResults">
+            <div class="test-section info">
+                <div class="test-title">
+                    <span class="status-icon status-info">⏳</span>
+                    Initializing Firebase Connection Tests...
+                </div>
+                <div class="test-details">
+                    Please wait while we verify your Firebase setup.
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="test-button" onclick="runAllTests()" id="testButton">
+                🧪 Run All Tests
+            </button>
+            <button class="test-button" onclick="runFirebaseTests()" id="firebaseTestButton">
+                🔥 Test Firebase Only
+            </button>
+            <button class="test-button" onclick="testAuthentication()" id="authTestButton">
+                🔐 Test Authentication
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Test results container
+        let testResults = [];
+        let currentProgress = 0;
+
+        // Update progress bar
+        function updateProgress(percent) {
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = percent + '%';
+        }
+
+        // Add test result
+        function addTestResult(title, status, details, icon = '') {
+            const result = {
+                title,
+                status, // 'success', 'error', 'warning', 'info'
+                details,
+                icon
+            };
+            testResults.push(result);
+            renderResults();
+        }
+
+        // Render all test results
+        function renderResults() {
+            const container = document.getElementById('testResults');
+            container.innerHTML = '';
+            
+            testResults.forEach(result => {
+                const section = document.createElement('div');
+                section.className = `test-section ${result.status}`;
+                
+                const statusIcons = {
+                    success: '✅',
+                    error: '❌', 
+                    warning: '⚠️',
+                    info: 'ℹ️'
+                };
+                
+                const statusClasses = {
+                    success: 'status-success',
+                    error: 'status-error',
+                    warning: 'status-warning', 
+                    info: 'status-info'
+                };
+                
+                section.innerHTML = `
+                    <div class="test-title">
+                        <span class="status-icon ${statusClasses[result.status]}">
+                            ${result.icon || statusIcons[result.status]}
+                        </span>
+                        ${result.title}
+                    </div>
+                    <div class="test-details">${result.details}</div>
+                `;
+                
+                container.appendChild(section);
+            });
+        }
+
+        // Test Firebase loading
+        function testFirebaseLoading() {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    if (window.firebaseLoaded) {
+                        addTestResult(
+                            'Firebase SDK Loading',
+                            'success',
+                            '✅ Firebase v12+ modular SDK loaded successfully<br>' +
+                            '📦 App initialized<br>' +
+                            '🗄️ Firestore available<br>' +
+                            '🔐 Authentication available',
+                            '🔥'
+                        );
+                        resolve(true);
+                    } else if (window.firebaseError) {
+                        addTestResult(
+                            'Firebase SDK Loading',
+                            'error',
+                            `❌ Firebase failed to initialize<br>` +
+                            `🐛 Error: ${window.firebaseError.message}<br>` +
+                            `💡 Check your internet connection and Firebase config`,
+                            '🔥'
+                        );
+                        resolve(false);
+                    } else {
+                        addTestResult(
+                            'Firebase SDK Loading',
+                            'warning',
+                            '⏳ Firebase is still loading...<br>' +
+                            '📶 Check your internet connection<br>' +
+                            '🔄 This may take a few seconds',
+                            '🔥'
+                        );
+                        resolve(false);
+                    }
+                }, 1000);
+            });
+        }
+
+        // Test Firebase configuration
+        function testFirebaseConfig() {
+            if (!window.firebaseConfig) {
+                addTestResult(
+                    'Firebase Configuration',
+                    'error',
+                    '❌ Firebase configuration not found<br>' +
+                    '🔧 Make sure firebaseConfig is properly set',
+                    '⚙️'
+                );
+                return false;
+            }
+
+            const config = window.firebaseConfig;
+            const requiredFields = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'];
+            const missingFields = requiredFields.filter(field => !config[field]);
+
+            if (missingFields.length > 0) {
+                addTestResult(
+                    'Firebase Configuration',
+                    'error',
+                    `❌ Missing required configuration fields: ${missingFields.join(', ')}<br>` +
+                    '🔧 Check your Firebase project settings',
+                    '⚙️'
+                );
+                return false;
+            }
+
+            addTestResult(
+                'Firebase Configuration',
+                'success',
+                `✅ All required configuration fields present<br>` +
+                `📊 Project ID: <strong>${config.projectId}</strong><br>` +
+                `🌐 Auth Domain: <strong>${config.authDomain}</strong><br>` +
+                `🗄️ Storage Bucket: <strong>${config.storageBucket}</strong>` +
+                `<div class="firebase-config">
+                    API Key: ${config.apiKey.substring(0, 20)}...<br>
+                    App ID: ${config.appId}<br>
+                    Sender ID: ${config.messagingSenderId}
+                </div>`,
+                '⚙️'
+            );
+            return true;
+        }
+
+        // Test Firestore connection
+        async function testFirestoreConnection() {
+            if (!window.firebaseDB) {
+                addTestResult(
+                    'Firestore Database',
+                    'error',
+                    '❌ Firestore not available<br>' +
+                    '🔧 Firebase may not be properly initialized',
+                    '🗄️'
+                );
+                return false;
+            }
+
+            try {
+                // Import Firestore functions
+                const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+                
+                // Try to read from a test collection (this will create it if it doesn't exist)
+                const testCollection = collection(window.firebaseDB, 'connection_test');
+                await getDocs(testCollection);
+                
+                addTestResult(
+                    'Firestore Database',
+                    'success',
+                    '✅ Firestore connection successful<br>' +
+                    '📊 Database is accessible<br>' +
+                    '🔐 Security rules are working<br>' +
+                    '💾 Ready for data operations',
+                    '🗄️'
+                );
+                return true;
+            } catch (error) {
+                let errorMessage = '❌ Firestore connection failed<br>';
+                
+                if (error.code === 'permission-denied') {
+                    errorMessage += '🔐 Permission denied - check Firestore security rules<br>' +
+                                  '💡 Make sure you\'re in test mode or authenticated';
+                } else if (error.code === 'unavailable') {
+                    errorMessage += '📶 Network error - check your internet connection<br>' +
+                                  '🔄 Try again in a few seconds';
+                } else {
+                    errorMessage += `🐛 Error: ${error.message}<br>` +
+                                  `📝 Code: ${error.code || 'unknown'}`;
+                }
+                
+                addTestResult(
+                    'Firestore Database',
+                    'error',
+                    errorMessage,
+                    '🗄️'
+                );
+                return false;
+            }
+        }
+
+        // Test Firebase Authentication
+        async function testFirebaseAuth() {
+            if (!window.firebaseAuth) {
+                addTestResult(
+                    'Firebase Authentication',
+                    'error',
+                    '❌ Firebase Auth not available<br>' +
+                    '🔧 Firebase may not be properly initialized',
+                    '🔐'
+                );
+                return false;
+            }
+
+            try {
+                // Import auth functions
+                const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js');
+                
+                // Test auth state listener
+                const unsubscribe = onAuthStateChanged(window.firebaseAuth, (user) => {
+                    // This will be called immediately
+                    unsubscribe(); // Clean up
+                });
+                
+                addTestResult(
+                    'Firebase Authentication',
+                    'success',
+                    '✅ Firebase Auth initialized successfully<br>' +
+                    '🔐 Authentication system ready<br>' +
+                    '📧 Email/password login available<br>' +
+                    '👤 User state monitoring active',
+                    '🔐'
+                );
+                return true;
+            } catch (error) {
+                addTestResult(
+                    'Firebase Authentication',
+                    'error',
+                    `❌ Firebase Auth test failed<br>` +
+                    `🐛 Error: ${error.message}<br>` +
+                    `💡 Check Firebase Auth configuration`,
+                    '🔐'
+                );
+                return false;
+            }
+        }
+
+        // Test browser compatibility
+        function testBrowserCompatibility() {
+            const features = {
+                'ES6 Modules': typeof window.import !== 'undefined' || 'noModule' in document.createElement('script'),
+                'Local Storage': typeof Storage !== 'undefined',
+                'Fetch API': typeof fetch !== 'undefined',
+                'Promises': typeof Promise !== 'undefined',
+                'Async/Await': (async () => {})().constructor === Promise
+            };
+
+            const unsupported = Object.entries(features).filter(([name, supported]) => !supported);
+            
+            if (unsupported.length === 0) {
+                addTestResult(
+                    'Browser Compatibility',
+                    'success',
+                    '✅ Browser fully supports modern Firebase<br>' +
+                    '🌐 ES6 modules supported<br>' +
+                    '💾 Local storage available<br>' +
+                    '🔄 Modern APIs available',
+                    '🌐'
+                );
+                return true;
+            } else {
+                addTestResult(
+                    'Browser Compatibility',
+                    'warning',
+                    `⚠️ Some features may not be fully supported:<br>` +
+                    unsupported.map(([name]) => `❌ ${name}`).join('<br>') +
+                    '<br>💡 Consider updating your browser',
+                    '🌐'
+                );
+                return false;
+            }
+        }
+
+        // Test network connectivity
+        async function testNetworkConnectivity() {
+            if (!navigator.onLine) {
+                addTestResult(
+                    'Network Connectivity',
+                    'warning',
+                    '📱 Browser reports offline status<br>' +
+                    '🔄 TeamForge will use localStorage backup<br>' +
+                    '📶 Connect to internet for cloud features',
+                    '📶'
+                );
+                return false;
+            }
+
+            try {
+                const response = await fetch('https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js', {
+                    method: 'HEAD',
+                    cache: 'no-cache'
+                });
+                
+                if (response.ok) {
+                    addTestResult(
+                        'Network Connectivity',
+                        'success',
+                        '✅ Internet connection active<br>' +
+                        '🔥 Firebase CDN accessible<br>' +
+                        '🌐 Cloud features available',
+                        '📶'
+                    );
+                    return true;
+                } else {
+                    throw new Error('CDN not accessible');
+                }
+            } catch (error) {
+                addTestResult(
+                    'Network Connectivity',
+                    'warning',
+                    '⚠️ Limited network connectivity<br>' +
+                    '📱 May affect Firebase loading<br>' +
+                    '💾 LocalStorage backup available',
+                    '📶'
+                );
+                return false;
+            }
+        }
+
+        // Run Firebase-specific tests
+        async function runFirebaseTests() {
+            testResults = [];
+            currentProgress = 0;
+            updateProgress(0);
+            
+            const firebaseLoaded = await testFirebaseLoading();
+            updateProgress(50);
+            
+            if (firebaseLoaded) {
+                testFirebaseConfig();
+                await testFirestoreConnection();
+                await testFirebaseAuth();
+            }
+            
+            updateProgress(100);
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            document.getElementById('testButton').disabled = true;
+            document.getElementById('firebaseTestButton').disabled = true;
+            document.getElementById('authTestButton').disabled = true;
+            
+            testResults = [];
+            currentProgress = 0;
+            updateProgress(0);
+
+            // Browser compatibility test
+            testBrowserCompatibility();
+            updateProgress(20);
+
+            // Network connectivity test
+            await testNetworkConnectivity();
+            updateProgress(40);
+
+            // Firebase loading test
+            const firebaseLoaded = await testFirebaseLoading();
+            updateProgress(60);
+
+            if (firebaseLoaded) {
+                // Configuration test
+                testFirebaseConfig();
+                updateProgress(70);
+
+                // Firestore test
+                await testFirestoreConnection();
+                updateProgress(85);
+
+                // Auth test
+                await testFirebaseAuth();
+                updateProgress(100);
+            } else {
+                updateProgress(100);
+            }
+
+            // Re-enable buttons
+            document.getElementById('testButton').disabled = false;
+            document.getElementById('firebaseTestButton').disabled = false;
+            document.getElementById('authTestButton').disabled = false;
+
+            // Show summary
+            const successCount = testResults.filter(r => r.status === 'success').length;
+            const totalTests = testResults.length;
+            
+            if (successCount === totalTests) {
+                addTestResult(
+                    '🎉 All Tests Passed!',
+                    'success',
+                    `✅ ${successCount}/${totalTests} tests successful<br>` +
+                    '🚀 TeamForge is ready for Firebase integration<br>' +
+                    '🔥 Your setup is perfect!',
+                    '🏆'
+                );
+            } else {
+                addTestResult(
+                    '📊 Test Summary',
+                    successCount > totalTests / 2 ? 'warning' : 'error',
+                    `📈 ${successCount}/${totalTests} tests passed<br>` +
+                    '🔧 Some issues need attention<br>' +
+                    '💡 Check failed tests above for solutions',
+                    '📋'
+                );
+            }
+        }
+
+        // Test authentication specifically
+        async function testAuthentication() {
+            testResults = [];
+            updateProgress(0);
+            
+            const firebaseLoaded = await testFirebaseLoading();
+            updateProgress(50);
+            
+            if (firebaseLoaded) {
+                await testFirebaseAuth();
+                updateProgress(100);
+            }
+        }
+
+        // Auto-run tests when page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                runAllTests();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

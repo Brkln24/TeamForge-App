@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics - TeamForge</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Stats Page Specific Styles */
+        .stats-container {
+            padding: 2rem 0;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .stats-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .stats-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .stats-filter {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+        }
+
+        .stats-filter select {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .stats-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        .stats-table-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .stats-table-header {
+            background: var(--bg-primary);
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .table-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .stats-table th,
+        .stats-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-secondary);
+        }
+
+        .stats-table th {
+            background: var(--bg-primary);
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stats-table tbody tr:hover {
+            background: var(--bg-primary);
+        }
+
+        .player-info-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .player-avatar-small {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3182ce, #2c5aa0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .avatar-text-small {
+            color: white;
+            font-weight: bold;
+            font-size: 0.7rem;
+        }
+
+        .player-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .player-name-table {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .player-position-table {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .stat-number {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .stat-percentage {
+            color: var(--text-secondary);
+        }
+
+        .stats-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .stats-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .stats-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-primary);
+        }
+
+        .team-stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+        }
+
+        .team-stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .team-stat-value {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .leader-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-secondary);
+        }
+
+        .leader-item:last-child {
+            border-bottom: none;
+        }
+
+        .leader-rank {
+            width: 24px;
+            height: 24px;
+            background: var(--accent-primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .leader-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .leader-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .leader-stat {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .stats-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .stats-table {
+                font-size: 0.8rem;
+            }
+            
+            .stats-table th,
+            .stats-table td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+
+    <!-- Modern Firebase v12+ Modular SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+        import { getFirestore, connectFirestoreEmulator } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+        import { getAuth, connectAuthEmulator } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+        // Your TeamForge Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCrAPyjI91mdpOXgrUO6vKP83TbhMfQGKI",
+            authDomain: "teamforgeproject-37f27.firebaseapp.com",
+            projectId: "teamforgeproject-37f27",
+            storageBucket: "teamforgeproject-37f27.firebasestorage.app",
+            messagingSenderId: "625240400602",
+            appId: "1:625240400602:web:c24e30c9ba4f28b0bafbe3",
+            measurementId: "G-V2GBMH5H88"
+        };
+
+        try {
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+            
+            // Make Firebase available globally for testing
+            window.firebaseApp = app;
+            window.firebaseDB = db;
+            window.firebaseAuth = auth;
+            window.firebaseConfig = firebaseConfig;
+            
+            console.log('🔥 Firebase v12+ initialized successfully');
+            console.log('📊 Project ID:', firebaseConfig.projectId);
+            
+            // Mark Firebase as loaded
+            window.firebaseLoaded = true;
+            
+        } catch (error) {
+            console.error('❌ Firebase initialization failed:', error);
+            window.firebaseError = error;
+        }
+    </script>
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <nav class="navbar">
+                <!-- Navigation will be populated by JavaScript -->
+            </nav>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="stats-container">
+                    <div class="stats-header">
+                        <h1 class="stats-title">Stats Page</h1>
+                        <div class="stats-controls">
+                            <div class="stats-filter">
+                                <span>Team:</span>
+                                <select id="teamFilter">
+                                    <option value="all">All Teams</option>
+                                    <!-- Team options will be populated by JavaScript -->
+                                </select>
+                            </div>
+                            <div class="stats-filter">
+                                <span>View:</span>
+                                <select id="statsType">
+                                    <option value="averages">Averages (Per Game)</option>
+                                    <option value="totals">Totals (Season)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-content">
+                        <div class="stats-table-container">
+                            <div class="stats-table-header">
+                                <h2 class="table-title">Player Statistics</h2>
+                            </div>
+                            <table class="stats-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Team</th>
+                                        <th>GP</th>
+                                        <th id="ptsHeader">PPG</th>
+                                        <th id="rebHeader">RPG</th>
+                                        <th id="astHeader">APG</th>
+                                        <th id="stlHeader">SPG</th>
+                                        <th id="blkHeader">BPG</th>
+                                        <th id="minHeader">MPG</th>
+                                        <th id="toHeader">TPG</th>
+                                        <th>FG%</th>
+                                        <th>EFF</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="statsTableBody">
+                                    <!-- Player stats will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="stats-sidebar">
+                            <div class="stats-card">
+                                <h3 class="stats-card-title">Team Stats</h3>
+                                <div class="stats-filter" style="margin-bottom: 1rem;">
+                                    <span>Team:</span>
+                                    <select id="teamStatsSelector">
+                                        <!-- Team options will be populated by JavaScript -->
+                                    </select>
+                                </div>
+                                <div id="teamStatsContainer">
+                                    <!-- Team stats will be populated here -->
+                                </div>
+                            </div>
+                            
+                            <div class="stats-card">
+                                <h3 class="stats-card-title">Statistical Leaders</h3>
+                                <div class="stats-filter" style="margin-bottom: 1rem;">
+                                    <span>Sort by:</span>
+                                    <select id="leaderSort">
+                                        <option value="fgPercent">Field Goal %</option>
+                                        <option value="ppg">Points Per Game</option>
+                                        <option value="rpg">Rebounds Per Game</option>
+                                        <option value="apg">Assists Per Game</option>
+                                        <option value="spg">Steals Per Game</option>
+                                        <option value="bpg">Blocks Per Game</option>
+                                        <option value="mpg">Minutes Per Game</option>
+                                        <option value="efficiency">Efficiency</option>
+                                        <option value="tpg">Turnovers Per Game</option>
+                                    </select>
+                                </div>
+                                <div id="leadersContainer">
+                                    <!-- Leaders will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Load dynamic player statistics from database
+        function loadPlayerStats() {
+            if (!window.db) {
+                console.error('Database not available');
+                return [];
+            }
+
+            // Get current user's teams to determine leagues
+            const currentUser = window.db.getCurrentUser();
+            if (!currentUser) {
+                return [];
+            }
+
+            const userTeams = window.db.getUserTeams(currentUser.id);
+            if (userTeams.length === 0) {
+                return [];
+            }
+
+            // Get all leagues from user's teams
+            const userLeagues = [...new Set(userTeams.map(team => team.league).filter(league => league))];
+            console.log('STATS: User leagues:', userLeagues);
+
+            // Get all teams from these leagues
+            const allTeams = window.db.getTable('teams') || [];
+            const leagueTeams = allTeams.filter(team => userLeagues.includes(team.league));
+            console.log('STATS: All teams in user leagues:', leagueTeams);
+
+            const allPlayers = [];
+
+            leagueTeams.forEach(team => {
+                const teamPlayers = window.db.getTeamPlayers(team.id);
+                teamPlayers.forEach(player => {
+                    const averages = window.db.calculatePlayerAverages(player.id);
+                    const seasonStats = window.db.getPlayerSeasonStats(player.id);
+                    
+                    // Handle different name field formats
+                    const firstName = player.firstName || player.first_name || 'Unknown';
+                    const lastName = player.lastName || player.last_name || 'Player';
+                    
+                    const playerStat = {
+                        id: player.id,
+                        name: `${firstName} ${lastName}`,
+                        initials: `${firstName.charAt(0)}${lastName.charAt(0)}`,
+                        position: player.position || player.preferred_position || 'Player',
+                        team_id: team.id,
+                        team_name: team.name,
+                        
+                        // Games played
+                        gamesPlayed: seasonStats.games_played || 0,
+                        
+                        // Averages (per game)
+                        ppg: averages.ppg,
+                        rpg: averages.rpg,
+                        apg: averages.apg,
+                        spg: averages.spg,
+                        bpg: averages.bpg,
+                        mpg: averages.mpg,
+                        tpg: averages.tpg,
+                        fgPercent: averages.fg_percent,
+                        
+                        // Totals (season)
+                        totalPoints: seasonStats.total_points || 0,
+                        totalRebounds: seasonStats.total_rebounds || 0,
+                        totalAssists: seasonStats.total_assists || 0,
+                        totalSteals: seasonStats.total_steals || 0,
+                        totalBlocks: seasonStats.total_blocks || 0,
+                        totalMinutes: seasonStats.total_minutes || 0,
+                        totalTurnovers: seasonStats.total_turnovers || 0,
+                        
+                        // Shooting totals
+                        totalFGMade: seasonStats.total_fg_made || 0,
+                        totalFGAttempted: seasonStats.total_fg_attempted || 0,
+                        totalFTMade: seasonStats.total_ft_made || 0,
+                        totalFTAttempted: seasonStats.total_ft_attempted || 0,
+                        totalThreeMade: seasonStats.total_three_made || 0,
+                        totalThreeAttempted: seasonStats.total_three_attempted || 0,
+                        
+                        efficiency: calculateEfficiency(averages)
+                    };
+                    allPlayers.push(playerStat);
+                });
+            });
+
+            console.log('Loaded player stats:', allPlayers);
+            return allPlayers;
+        }
+
+        function calculateEfficiency(averages) {
+            // Basic efficiency calculation: (PTS + REB + AST + STL + BLK - TO) / Games
+            return Math.round(averages.ppg + (averages.rpg *2) + (averages.apg*3) + (averages.spg*3) + (averages.bpg*3) - (averages.tpg*3));
+        }
+
+        // Initialize player stats from database
+        let playerStats = [];
+        let currentPlayers = [];
+
+        function initializeStats() {
+            playerStats = loadPlayerStats();
+            currentPlayers = [...playerStats];
+            
+            populateTeamFilter();
+            renderStatsTable();
+            renderTeamStats();
+            renderLeaders();
+            updateColumnHeaders();
+        }
+
+        function populateTeamFilter() {
+            const currentUser = window.db.getCurrentUser();
+            console.log('STATS PAGE DEBUG - Current User:', currentUser); // Enhanced debug
+            if (!currentUser) return;
+            
+            const userTeams = window.db.getUserTeams(currentUser.id);
+            console.log('STATS PAGE DEBUG - User Teams:', userTeams); // Enhanced debug
+            
+            if (userTeams.length === 0) return;
+            
+            // Get all leagues from user's teams
+            const userLeagues = [...new Set(userTeams.map(team => team.league).filter(league => league))];
+            
+            // Get all teams from these leagues
+            const allTeams = window.db.getTable('teams') || [];
+            const leagueTeams = allTeams.filter(team => userLeagues.includes(team.league));
+            console.log('STATS PAGE DEBUG - League Teams:', leagueTeams); // Enhanced debug
+            console.log('STATS PAGE DEBUG - Number of league teams found:', leagueTeams.length); // Enhanced debug
+            
+            const teamFilter = document.getElementById('teamFilter');
+            const teamStatsSelector = document.getElementById('teamStatsSelector');
+            
+            // Clear existing options except "All Teams" for main filter
+            teamFilter.innerHTML = '<option value="all">All League Teams</option>';
+            teamStatsSelector.innerHTML = '';
+            
+            // Add team options to both selectors (prioritize user's teams first)
+            const sortedTeams = [
+                ...userTeams, // User's teams first
+                ...leagueTeams.filter(team => !userTeams.some(userTeam => userTeam.id === team.id)) // Other league teams
+            ];
+            
+            sortedTeams.forEach((team, index) => {
+                // Main team filter
+                const option = document.createElement('option');
+                option.value = team.id;
+                option.textContent = `${team.name}${userTeams.some(ut => ut.id === team.id) ? ' (Your Team)' : ''}`;
+                teamFilter.appendChild(option);
+                
+                // Team stats selector (only user's teams for detailed team stats)
+                if (userTeams.some(ut => ut.id === team.id)) {
+                    const statsOption = document.createElement('option');
+                    statsOption.value = team.id;
+                    statsOption.textContent = team.name;
+                    if (teamStatsSelector.children.length === 0) statsOption.selected = true; // Select first user team by default
+                    teamStatsSelector.appendChild(statsOption);
+                }
+            });
+        }
+
+        function updateColumnHeaders() {
+            const statsType = document.getElementById('statsType').value;
+            const isAverages = statsType === 'averages';
+            
+            document.getElementById('ptsHeader').textContent = isAverages ? 'PPG' : 'PTS';
+            document.getElementById('rebHeader').textContent = isAverages ? 'RPG' : 'REB';
+            document.getElementById('astHeader').textContent = isAverages ? 'APG' : 'AST';
+            document.getElementById('stlHeader').textContent = isAverages ? 'SPG' : 'STL';
+            document.getElementById('blkHeader').textContent = isAverages ? 'BPG' : 'BLK';
+            document.getElementById('minHeader').textContent = isAverages ? 'MPG' : 'MIN';
+            document.getElementById('toHeader').textContent = isAverages ? 'TPG' : 'TO';
+        }
+
+        function calculateTeamStatsByPlayerAggregation(teamId) {
+            // Filter players by the selected team (similar to team filter functionality)
+            const teamPlayers = playerStats.filter(player => player.team_id === teamId);
+            
+            if (teamPlayers.length === 0) {
+                return {
+                    games_played: 0,
+                    ppg: 0,
+                    apg: 0,
+                    rpg: 0,
+                    fg_percent: 0,
+                    ft_percent: 0,
+                    three_percent: 0,
+                    spg: 0,
+                    bpg: 0,
+                    mpg: 0,
+                    tpg: 0
+                };
+            }
+            
+            // Sum all individual player stats
+            const totals = teamPlayers.reduce((acc, player) => {
+                acc.totalPoints += player.totalPoints || 0;
+                acc.totalAssists += player.totalAssists || 0;
+                acc.totalRebounds += player.totalRebounds || 0;
+                acc.totalSteals += player.totalSteals || 0;
+                acc.totalBlocks += player.totalBlocks || 0;
+                acc.totalMinutes += player.totalMinutes || 0;
+                acc.totalTurnovers += player.totalTurnovers || 0;
+                acc.gamesPlayed += player.gamesPlayed || 0;
+                
+                // Use actual shooting data instead of estimates
+                acc.totalFGMade += player.totalFGMade || 0;
+                acc.totalFGAttempted += player.totalFGAttempted || 0;
+                acc.totalFTMade += player.totalFTMade || 0;
+                acc.totalFTAttempted += player.totalFTAttempted || 0;
+                acc.totalThreeMade += player.totalThreeMade || 0;
+                acc.totalThreeAttempted += player.totalThreeAttempted || 0;
+                
+                return acc;
+            }, {
+                totalPoints: 0,
+                totalAssists: 0,
+                totalRebounds: 0,
+                totalSteals: 0,
+                totalBlocks: 0,
+                totalMinutes: 0,
+                totalTurnovers: 0,
+                gamesPlayed: 0,
+                totalFGMade: 0,
+                totalFGAttempted: 0,
+                totalFTMade: 0,
+                totalFTAttempted: 0,
+                totalThreeMade: 0,
+                totalThreeAttempted: 0
+            });
+            
+            // Get the actual number of team games (not sum of individual games)
+            const teamGames = Math.max(...teamPlayers.map(p => p.gamesPlayed), 1);
+            
+            // Calculate averages by dividing by number of games
+            return {
+                games_played: teamGames,
+                ppg: Math.round((totals.totalPoints / teamGames) * 10) / 10,
+                apg: Math.round((totals.totalAssists / teamGames) * 10) / 10,
+                rpg: Math.round((totals.totalRebounds / teamGames) * 10) / 10,
+                spg: Math.round((totals.totalSteals / teamGames) * 10) / 10,
+                bpg: Math.round((totals.totalBlocks / teamGames) * 10) / 10,
+                mpg: Math.round((totals.totalMinutes / teamGames) * 10) / 10,
+                tpg: Math.round((totals.totalTurnovers / teamGames) * 10) / 10,
+                fg_percent: totals.totalFGAttempted > 0 ? Math.round((totals.totalFGMade / totals.totalFGAttempted) * 1000) / 10 : 0,
+                ft_percent: totals.totalFTAttempted > 0 ? Math.round((totals.totalFTMade / totals.totalFTAttempted) * 1000) / 10 : 0,
+                three_percent: totals.totalThreeAttempted > 0 ? Math.round((totals.totalThreeMade / totals.totalThreeAttempted) * 1000) / 10 : 0
+            };
+        }
+
+        function renderTeamStats() {
+            const currentUser = window.db.getCurrentUser();
+            if (!currentUser) return;
+            
+            const teamStatsSelector = document.getElementById('teamStatsSelector');
+            const selectedTeamId = teamStatsSelector.value;
+            const teamStatsContainer = document.getElementById('teamStatsContainer');
+            
+            if (!selectedTeamId) {
+                teamStatsContainer.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">Please select a team</p>';
+                return;
+            }
+            
+            // Use the new player aggregation method
+            const teamAverages = calculateTeamStatsByPlayerAggregation(selectedTeamId);
+            
+            teamStatsContainer.innerHTML = `
+                <div class="team-stat-item">
+                    <span class="team-stat-label">Games Played</span>
+                    <span class="team-stat-value">${teamAverages.games_played}</span>
+                </div>
+                <div class="team-stat-item">
+                    <span class="team-stat-label">PPG</span>
+                    <span class="team-stat-value">${teamAverages.ppg}</span>
+                </div>
+                <div class="team-stat-item">
+                    <span class="team-stat-label">APG</span>
+                    <span class="team-stat-value">${teamAverages.apg}</span>
+                </div>
+                <div class="team-stat-item">
+                    <span class="team-stat-label">RPG</span>
+                    <span class="team-stat-value">${teamAverages.rpg}</span>
+                </div>
+                <div class="team-stat-item">
+                    <span class="team-stat-label">SPG</span>
+                    <span class="team-stat-value">${teamAverages.spg}</span>
+                </div>
+                <div class="team-stat-item">
+                    <span class="team-stat-label">BPG</span>
+                    <span class="team-stat-value">${teamAverages.bpg}</span>
+                </div>
+                <div class="team-stat-item">
+                    <span class="team-stat-label">TPG</span>
+                    <span class="team-stat-value">${teamAverages.tpg}</span>
+                </div>
+                <div class="team-stat-item">
+                    <span class="team-stat-label">FG%</span>
+                    <span class="team-stat-value">${teamAverages.fg_percent}%</span>
+                </div>
+                <div class="team-stat-item">
+                    <span class="team-stat-label">FT%</span>
+                    <span class="team-stat-value">${teamAverages.ft_percent}%</span>
+                </div>
+                <div class="team-stat-item">
+                    <span class="team-stat-label">3P%</span>
+                    <span class="team-stat-value">${teamAverages.three_percent}%</span>
+                </div>
+            `;
+            
+            console.log('RENDER TEAM STATS DEBUG - Team stats rendered successfully'); // Enhanced debug
+        }
+
+        function renderStatsTable(players = currentPlayers) {
+            const tbody = document.getElementById('statsTableBody');
+            const statsType = document.getElementById('statsType').value;
+            const isAverages = statsType === 'averages';
+            
+            tbody.innerHTML = players.map(player => {
+                // Choose which stats to display based on type
+                const points = isAverages ? player.ppg : player.totalPoints;
+                const rebounds = isAverages ? player.rpg : player.totalRebounds;
+                const assists = isAverages ? player.apg : player.totalAssists;
+                const steals = isAverages ? player.spg : player.totalSteals;
+                const blocks = isAverages ? player.bpg : player.totalBlocks;
+                const minutes = isAverages ? player.mpg : player.totalMinutes;
+                const turnovers = isAverages ? player.tpg : player.totalTurnovers;
+                
+                return `
+                    <tr>
+                        <td>
+                            <div class="player-info-cell">
+                                <div class="player-avatar-small">
+                                    <span class="avatar-text-small">${player.initials}</span>
+                                </div>
+                                <div class="player-details">
+                                    <span class="player-name-table">${player.name}</span>
+                                    <span class="player-position-table">${player.position}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="stat-number">${player.team_name}</span></td>
+                        <td><span class="stat-number">${player.gamesPlayed}</span></td>
+                        <td><span class="stat-number">${points}</span></td>
+                        <td><span class="stat-number">${rebounds}</span></td>
+                        <td><span class="stat-number">${assists}</span></td>
+                        <td><span class="stat-number">${steals}</span></td>
+                        <td><span class="stat-number">${blocks}</span></td>
+                        <td><span class="stat-number">${minutes}</span></td>
+                        <td><span class="stat-number">${turnovers}</span></td>
+                        <td><span class="stat-percentage">${player.fgPercent}%</span></td>
+                        <td><span class="stat-number">${player.efficiency}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderLeaders(statType = 'fgPercent') {
+            const leadersContainer = document.getElementById('leadersContainer');
+            
+            // Create a copy of current players and sort by the selected stat
+            let sortedPlayers = [...currentPlayers];
+            
+            // Sort based on stat type (ascending for turnovers, descending for others)
+            sortedPlayers.sort((a, b) => {
+                if (statType === 'tpg') {
+                    return a[statType] - b[statType]; // Ascending for turnovers (lower is better)
+                } else {
+                    return b[statType] - a[statType]; // Descending for other stats (higher is better)
+                }
+            });
+
+            // Take top 5 players
+            const topPlayers = sortedPlayers.slice(0, 5);
+
+            // Format the stat value for display
+            function formatStatValue(player, stat) {
+                if (stat === 'fgPercent') {
+                    return `${player[stat]}%`;
+                } else {
+                    return player[stat].toString();
+                }
+            }
+
+            leadersContainer.innerHTML = topPlayers.map((player, index) => `
+                <div class="leader-item">
+                    <div class="leader-rank">${index + 1}</div>
+                    <div class="player-avatar-small">
+                        <span class="avatar-text-small">${player.initials}</span>
+                    </div>
+                    <div class="leader-info">
+                        <span class="leader-name">${player.name}</span>
+                        <span class="leader-stat">${formatStatValue(player, statType)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterPlayers() {
+            const teamFilter = document.getElementById('teamFilter').value;
+            
+            let filteredPlayers = [...playerStats];
+            
+            // Apply team filter
+            if (teamFilter !== 'all') {
+                filteredPlayers = filteredPlayers.filter(p => p.team_id === teamFilter);
+            }
+
+            // Update current players and re-render
+            currentPlayers = filteredPlayers;
+            renderStatsTable(currentPlayers);
+            
+            // Update leaders with current sort selection
+            const leaderSort = document.getElementById('leaderSort').value;
+            renderLeaders(leaderSort);
+        }
+
+        function updateStatsType() {
+            updateColumnHeaders();
+            renderStatsTable(currentPlayers);
+        }
+
+        function updateLeaders() {
+            const leaderSort = document.getElementById('leaderSort').value;
+            renderLeaders(leaderSort);
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if we just came from finalizing a game
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('updated') === 'true') {
+                showMessage('Stats updated from finalized game!', 'success');
+            }
+            
+            initializeStats(); // Load stats from database
+            
+            // Add event listeners
+            document.getElementById('teamFilter').addEventListener('change', filterPlayers);
+            document.getElementById('statsType').addEventListener('change', updateStatsType);
+            document.getElementById('leaderSort').addEventListener('change', updateLeaders);
+            document.getElementById('teamStatsSelector').addEventListener('change', renderTeamStats);
+            
+            // Add refresh button functionality
+            addRefreshButton();
+        });
+
+        function showMessage(message, type = 'info') {
+            // Create message element if it doesn't exist
+            let messageEl = document.querySelector('.message-display');
+            if (!messageEl) {
+                messageEl = document.createElement('div');
+                messageEl.className = 'message-display';
+                messageEl.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 0.75rem 1rem;
+                    border-radius: 6px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 1001;
+                    display: none;
+                    animation: slideIn 0.3s ease-out;
+                `;
+                document.body.appendChild(messageEl);
+            }
+            
+            messageEl.textContent = message;
+            messageEl.className = `message-display ${type}`;
+            
+            // Set colors based on type
+            if (type === 'success') {
+                messageEl.style.background = '#22c55e';
+            } else if (type === 'error') {
+                messageEl.style.background = '#ef4444';
+            } else {
+                messageEl.style.background = '#3182ce';
+            }
+            
+            messageEl.style.display = 'block';
+            
+            // Auto-hide after 4 seconds
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 4000);
+        }
+
+        function addRefreshButton() {
+            const statsControls = document.querySelector('.stats-controls');
+            const refreshButton = document.createElement('button');
+            refreshButton.innerHTML = '🔄 Refresh Stats';
+            refreshButton.style.cssText = `
+                padding: 0.5rem 1rem;
+                background: var(--primary-color);
+                color: white;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 0.9rem;
+                font-weight: 500;
+            `;
+            
+            refreshButton.addEventListener('click', () => {
+                initializeStats();
+                showMessage('Stats refreshed!', 'success');
+            });
+            
+            statsControls.appendChild(refreshButton);
+        }
+    </script>
+
+    <script src="js/database.js?v=13"></script>
+    <script src="js/navigation.js?v=13"></script>
+    <script src="js/auth.js?v=13"></script>
+</body>
+</html>

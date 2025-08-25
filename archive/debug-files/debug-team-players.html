@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Team Players Data</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .debug-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .debug-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #4a90e2;
+        }
+        pre {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+            border: 1px solid #ddd;
+        }
+        .team-selector {
+            margin-bottom: 20px;
+        }
+        select {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background: white;
+            min-width: 300px;
+        }
+        .error {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+        .success {
+            color: #388e3c;
+            font-weight: bold;
+        }
+        .warning {
+            color: #f57c00;
+            font-weight: bold;
+        }
+        .player-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .player-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .data-table th, .data-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .data-table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+        .null-value {
+            color: #999;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Debug Team Players Data</h1>
+        <p>This tool helps debug the data flow from database tables to the roster display.</p>
+        
+        <div class="team-selector">
+            <label for="team-select">Select Team to Debug:</label>
+            <select id="team-select" onchange="debugTeamData()">
+                <option value="">Choose a team...</option>
+            </select>
+        </div>
+
+        <div id="debug-output"></div>
+    </div>
+
+    <script src="js/database.js"></script>
+    <script>
+        // Load teams when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTeams();
+        });
+
+        function loadTeams() {
+            try {
+                const teams = window.db.getTeams();
+                const teamSelect = document.getElementById('team-select');
+                
+                teamSelect.innerHTML = '<option value="">Choose a team...</option>';
+                
+                teams.forEach(team => {
+                    const option = document.createElement('option');
+                    option.value = team.id;
+                    option.textContent = team.name;
+                    teamSelect.appendChild(option);
+                });
+                
+                console.log('Loaded teams:', teams);
+            } catch (error) {
+                console.error('Error loading teams:', error);
+                document.getElementById('debug-output').innerHTML = `<div class="error">Error loading teams: ${error.message}</div>`;
+            }
+        }
+
+        function debugTeamData() {
+            const teamSelect = document.getElementById('team-select');
+            const selectedTeamId = teamSelect.value;
+            const outputDiv = document.getElementById('debug-output');
+            
+            if (!selectedTeamId) {
+                outputDiv.innerHTML = '';
+                return;
+            }
+            
+            try {
+                // Get all the raw data first
+                const allUsers = window.db.getTable('users') || [];
+                const allMemberships = window.db.getTable('team_memberships') || [];
+                const allProfiles = window.db.getTable('player_profiles') || [];
+                
+                // Get processed team players
+                const teamPlayers = window.db.getTeamPlayers(selectedTeamId);
+                
+                // Filter data for this team
+                const teamMemberships = allMemberships.filter(m => m.team_id === selectedTeamId);
+                const playerMemberships = teamMemberships.filter(m => m.role === 'player' && m.is_active);
+                
+                let html = '';
+                
+                // Show raw database tables summary
+                html += `
+                    <div class="debug-section">
+                        <div class="debug-title">Raw Database Tables Summary</div>
+                        <p><strong>Total Users:</strong> ${allUsers.length}</p>
+                        <p><strong>Total Memberships:</strong> ${allMemberships.length}</p>
+                        <p><strong>Total Player Profiles:</strong> ${allProfiles.length}</p>
+                        <p><strong>Team Memberships:</strong> ${teamMemberships.length}</p>
+                        <p><strong>Player Memberships (active):</strong> ${playerMemberships.length}</p>
+                    </div>
+                `;
+                
+                // Show team memberships
+                html += `
+                    <div class="debug-section">
+                        <div class="debug-title">Team Memberships for Selected Team</div>
+                        <pre>${JSON.stringify(teamMemberships, null, 2)}</pre>
+                    </div>
+                `;
+                
+                // Show all player profiles
+                html += `
+                    <div class="debug-section">
+                        <div class="debug-title">All Player Profiles in Database</div>
+                        <pre>${JSON.stringify(allProfiles, null, 2)}</pre>
+                    </div>
+                `;
+                
+                // Show processed team players result
+                html += `
+                    <div class="debug-section">
+                        <div class="debug-title">getTeamPlayers() Result</div>
+                        <p><strong>Players Returned:</strong> ${teamPlayers.length}</p>
+                        <pre>${JSON.stringify(teamPlayers, null, 2)}</pre>
+                    </div>
+                `;
+                
+                // Show detailed analysis for each player
+                if (teamPlayers.length > 0) {
+                    html += `<div class="debug-section">
+                        <div class="debug-title">Individual Player Analysis</div>`;
+                    
+                    teamPlayers.forEach((player, index) => {
+                        const membership = playerMemberships.find(m => m.user_id === player.id);
+                        const profile = allProfiles.find(p => p.user_id === player.id);
+                        const user = allUsers.find(u => u.id === player.id);
+                        
+                        html += `
+                            <div class="player-card">
+                                <div class="player-name">Player ${index + 1}: ${player.first_name} ${player.last_name}</div>
+                                
+                                <h4>User Data (from users table):</h4>
+                                <table class="data-table">
+                                    <tr><th>Field</th><th>Value</th></tr>
+                                    <tr><td>ID</td><td>${user?.id || 'N/A'}</td></tr>
+                                    <tr><td>First Name</td><td>${user?.first_name || 'N/A'}</td></tr>
+                                    <tr><td>Last Name</td><td>${user?.last_name || 'N/A'}</td></tr>
+                                    <tr><td>Role</td><td>${user?.role || 'N/A'}</td></tr>
+                                </table>
+                                
+                                <h4>Membership Data (from team_memberships table):</h4>
+                                <table class="data-table">
+                                    <tr><th>Field</th><th>Value</th></tr>
+                                    <tr><td>Team ID</td><td>${membership?.team_id || 'N/A'}</td></tr>
+                                    <tr><td>User ID</td><td>${membership?.user_id || 'N/A'}</td></tr>
+                                    <tr><td>Role</td><td>${membership?.role || 'N/A'}</td></tr>
+                                    <tr><td>Is Active</td><td>${membership?.is_active || 'N/A'}</td></tr>
+                                    <tr><td>Jersey Number</td><td>${membership?.jersey_number || 'N/A'}</td></tr>
+                                    <tr><td>Position</td><td>${membership?.position || 'N/A'}</td></tr>
+                                </table>
+                                
+                                <h4>Player Profile Data (from player_profiles table):</h4>
+                                <table class="data-table">
+                                    <tr><th>Field</th><th>Value</th></tr>
+                                    <tr><td>Profile ID</td><td>${profile?.id || '<span class="null-value">No Profile Found</span>'}</td></tr>
+                                    <tr><td>User ID</td><td>${profile?.user_id || '<span class="null-value">No Profile Found</span>'}</td></tr>
+                                    <tr><td>Height (cm)</td><td>${profile?.height_cm || '<span class="null-value">null</span>'}</td></tr>
+                                    <tr><td>Weight (kg)</td><td>${profile?.weight_kg || '<span class="null-value">null</span>'}</td></tr>
+                                    <tr><td>Wingspan (cm)</td><td>${profile?.wingspan_cm || '<span class="null-value">null</span>'}</td></tr>
+                                    <tr><td>Vertical (cm)</td><td>${profile?.vertical_cm || '<span class="null-value">null</span>'}</td></tr>
+                                    <tr><td>Age</td><td>${profile?.age || '<span class="null-value">null</span>'}</td></tr>
+                                    <tr><td>Preferred Position</td><td>${profile?.preferred_position || '<span class="null-value">null</span>'}</td></tr>
+                                </table>
+                                
+                                <h4>Final Merged Data (what getTeamPlayers returns):</h4>
+                                <table class="data-table">
+                                    <tr><th>Field</th><th>Value</th></tr>
+                                    <tr><td>Name</td><td>${player.first_name} ${player.last_name}</td></tr>
+                                    <tr><td>Position</td><td>${player.position || '<span class="null-value">No position</span>'}</td></tr>
+                                    <tr><td>Height</td><td>${player.height_cm || '<span class="null-value">No height</span>'}</td></tr>
+                                    <tr><td>Weight</td><td>${player.weight_kg || '<span class="null-value">No weight</span>'}</td></tr>
+                                    <tr><td>Wingspan</td><td>${player.wingspan_cm || '<span class="null-value">No wingspan</span>'}</td></tr>
+                                    <tr><td>Vertical</td><td>${player.vertical_cm || '<span class="null-value">No vertical</span>'}</td></tr>
+                                    <tr><td>Age</td><td>${player.age || '<span class="null-value">No age</span>'}</td></tr>
+                                </table>
+                                
+                                ${!profile ? '<div class="error">❌ No player profile found for this user!</div>' : '<div class="success">✅ Player profile found</div>'}
+                                ${!profile?.height_cm ? '<div class="warning">⚠️ Missing height data</div>' : ''}
+                                ${!profile?.weight_kg ? '<div class="warning">⚠️ Missing weight data</div>' : ''}
+                                ${!profile?.wingspan_cm ? '<div class="warning">⚠️ Missing wingspan data</div>' : ''}
+                                ${!profile?.vertical_cm ? '<div class="warning">⚠️ Missing vertical jump data</div>' : ''}
+                                ${!profile?.age ? '<div class="warning">⚠️ Missing age data</div>' : ''}
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                } else {
+                    html += `
+                        <div class="debug-section">
+                            <div class="error">No players found for this team!</div>
+                            <p>Possible reasons:</p>
+                            <ul>
+                                <li>No users have joined this team</li>
+                                <li>All team members have role 'coach' (not 'player')</li>
+                                <li>Team memberships are marked as inactive (is_active = false)</li>
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                outputDiv.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error debugging team data:', error);
+                outputDiv.innerHTML = `<div class="error">Error debugging team data: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

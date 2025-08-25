@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - TeamForge</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .register-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-primary);
+            padding: 2rem;
+        }
+
+        .register-container {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            max-width: 600px;
+            width: 100%;
+            border: 1px solid var(--border-primary);
+        }
+
+        .register-header {
+            padding: 2rem 2rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .header-brand {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .register-body {
+            padding: 2rem;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--border-primary);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin: 0 0.5rem;
+            position: relative;
+        }
+
+        .step.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .step.completed {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .step::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            width: 40px;
+            height: 2px;
+            background: var(--border-primary);
+            transform: translateY(-50%);
+        }
+
+        .step:last-child::after {
+            display: none;
+        }
+
+        .step.completed::after {
+            background: var(--success-color);
+        }
+
+        .form-step {
+            display: none;
+        }
+
+        .form-step.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-primary);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: var(--bg-secondary);
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+
+                        .role-selection {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }        .role-card {
+            border: 2px solid var(--border-primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--bg-primary);
+        }
+
+        .role-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .role-card.selected {
+            border-color: var(--primary-color);
+            background: rgba(49, 130, 206, 0.1);
+        }
+
+        .role-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .role-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .role-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .btn-primary, .btn-secondary {
+            padding: 0.875rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            margin: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(49, 130, 206, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-primary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary-color);
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            border-left: 4px solid #dc2626;
+        }
+
+        .success-message {
+            background: #dcfce7;
+            color: #16a34a;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            border-left: 4px solid #16a34a;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .login-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .key-validation {
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .key-validation.valid {
+            background: #dcfce7;
+            color: #16a34a;
+            border: 1px solid #16a34a;
+        }
+
+        .key-validation.invalid {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #dc2626;
+        }
+
+        @media (max-width: 768px) {
+            .role-selection {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row, .form-row-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .register-container {
+                max-width: 400px;
+            }
+        }
+    </style>
+
+    <!-- Modern Firebase v12+ Modular SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+        import { getFirestore, connectFirestoreEmulator } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+        import { getAuth, connectAuthEmulator } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+        // Your TeamForge Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCrAPyjI91mdpOXgrUO6vKP83TbhMfQGKI",
+            authDomain: "teamforgeproject-37f27.firebaseapp.com",
+            projectId: "teamforgeproject-37f27",
+            storageBucket: "teamforgeproject-37f27.firebasestorage.app",
+            messagingSenderId: "625240400602",
+            appId: "1:625240400602:web:c24e30c9ba4f28b0bafbe3",
+            measurementId: "G-V2GBMH5H88"
+        };
+
+        try {
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+            
+            // Make Firebase available globally for testing
+            window.firebaseApp = app;
+            window.firebaseDB = db;
+            window.firebaseAuth = auth;
+            window.firebaseConfig = firebaseConfig;
+            
+            console.log('🔥 Firebase v12+ initialized successfully');
+            console.log('📊 Project ID:', firebaseConfig.projectId);
+            
+            // Mark Firebase as loaded
+            window.firebaseLoaded = true;
+            
+        } catch (error) {
+            console.error('❌ Firebase initialization failed:', error);
+            window.firebaseError = error;
+        }
+    </script>
+</head>
+<body>
+    <div class="register-page">
+        <div class="register-container">
+            <div class="register-header">
+                <h1 class="header-brand">TeamForge</h1>
+                <p class="header-subtitle">Join the basketball community</p>
+            </div>
+
+            <div class="register-body">
+                <div class="step-indicator">
+                    <div class="step active" id="step1">1</div>
+                    <div class="step" id="step2">2</div>
+                    <div class="step" id="step3">3</div>
+                </div>
+
+                <div id="messageContainer"></div>
+
+                <form id="registrationForm">
+                    <!-- Step 1: Basic Information -->
+                    <div class="form-step active" id="step1-content">
+                        <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Basic Information</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="firstName" class="form-label">First Name</label>
+                                <input type="text" id="firstName" name="firstName" class="form-input" placeholder="John" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName" class="form-label">Last Name</label>
+                                <input type="text" id="lastName" name="lastName" class="form-input" placeholder="Doe" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" id="email" name="email" class="form-input" placeholder="john@example.com" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" class="form-input" placeholder="+1 (555) 123-4567" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" id="password" name="password" class="form-input" placeholder="••••••••" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" placeholder="••••••••" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Role Selection -->
+                    <div class="form-step" id="step2-content">
+                        <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Choose Your Role</h3>
+                        
+                        <div class="role-selection">
+                            <div class="role-card" data-role="coach">
+                                <div class="role-icon"><i class="bi bi-person-badge-fill"></i></div>
+                                <div class="role-title">Create Team</div>
+                                <div class="role-description">Start as a coach and create your own team</div>
+                            </div>
+                            <div class="role-card" data-role="join">
+                                <div class="role-icon"><i class="bi bi-person-fill"></i></div>
+                                <div class="role-title">Join Team</div>
+                                <div class="role-description">Join an existing team with a registration key</div>
+                            </div>
+                        </div>
+
+                        <!-- Registration Key Input (for joining teams) -->
+                        <div id="registrationKeySection" style="display: none;">
+                            <div class="form-group">
+                                <label for="registrationKey" class="form-label">Registration Key</label>
+                                <input type="text" id="registrationKey" name="registrationKey" class="form-input" placeholder="Enter 8-character key" style="text-transform: uppercase;" maxlength="8">
+                                <small style="color: var(--text-secondary); font-size: 0.85rem;">Get this key from your coach or team manager</small>
+                            </div>
+                            <div id="keyValidation"></div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Additional Details -->
+                    <div class="form-step" id="step3-content">
+                        <!-- Coach Details -->
+                        <div id="coachDetails" style="display: none;">
+                            <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Team Information</h3>
+                            
+                            <div class="form-group">
+                                <label for="teamName" class="form-label">Team Name</label>
+                                <input type="text" id="teamName" name="teamName" class="form-input" placeholder="Eagles Basketball Team" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="league" class="form-label">League</label>
+                                <div class="select-wrapper">
+                                    <select id="leagueSelect" name="leagueSelect" class="form-select">
+                                        <option value="">Select existing league</option>
+                                    </select>
+                                </div>
+                                <input type="text" id="league" name="league" class="form-input" placeholder="Or enter custom league name" style="margin-top: 0.5rem;">
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="homeVenue" class="form-label">Home Venue</label>
+                                    <div class="select-wrapper">
+                                        <select id="homeVenueSelect" name="homeVenueSelect" class="form-select">
+                                            <option value="">Select existing venue</option>
+                                        </select>
+                                    </div>
+                                    <input type="text" id="homeVenue" name="homeVenue" class="form-input" placeholder="Or enter custom home venue" style="margin-top: 0.5rem;">
+                                </div>
+                                <div class="form-group">
+                                    <label for="trainingVenue" class="form-label">Training Venue</label>
+                                    <div class="select-wrapper">
+                                        <select id="trainingVenueSelect" name="trainingVenueSelect" class="form-select">
+                                            <option value="">Select existing venue</option>
+                                        </select>
+                                    </div>
+                                    <input type="text" id="trainingVenue" name="trainingVenue" class="form-input" placeholder="Or enter custom training venue" style="margin-top: 0.5rem;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Player Details -->
+                        <div id="playerDetails" style="display: none;">
+                            <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Player Information</h3>
+                            
+                            <div class="form-row-3">
+                                <div class="form-group">
+                                    <label for="height" class="form-label">Height (cm)</label>
+                                    <input type="number" id="height" name="height" class="form-input" placeholder="180">
+                                </div>
+                                <div class="form-group">
+                                    <label for="weight" class="form-label">Weight (kg)</label>
+                                    <input type="number" id="weight" name="weight" class="form-input" placeholder="75">
+                                </div>
+                                <div class="form-group">
+                                    <label for="age" class="form-label">Age</label>
+                                    <input type="number" id="age" name="age" class="form-input" placeholder="22">
+                                </div>
+                            </div>
+
+                            <div class="form-row-3">
+                                <div class="form-group">
+                                    <label for="wingspan" class="form-label">Wingspan (cm)</label>
+                                    <input type="number" id="wingspan" name="wingspan" class="form-input" placeholder="185">
+                                </div>
+                                <div class="form-group">
+                                    <label for="vertical" class="form-label">Vertical Jump (cm)</label>
+                                    <input type="number" id="vertical" name="vertical" class="form-input" placeholder="65">
+                                </div>
+                                <div class="form-group">
+                                    <label for="jerseyNumber" class="form-label">Jersey Number</label>
+                                    <input type="number" id="jerseyNumber" name="jerseyNumber" class="form-input" placeholder="23">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="position" class="form-label">Position</label>
+                                <select id="position" name="position" class="form-select">
+                                    <option value="">Select Position</option>
+                                    <option value="Point Guard">Point Guard</option>
+                                    <option value="Shooting Guard">Shooting Guard</option>
+                                    <option value="Small Forward">Small Forward</option>
+                                    <option value="Power Forward">Power Forward</option>
+                                    <option value="Center">Center</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="navigation-buttons">
+                        <button type="button" id="prevBtn" class="btn-secondary" style="display: none;">Previous</button>
+                        <div style="flex: 1;"></div>
+                        <button type="button" id="nextBtn" class="btn-primary">Next</button>
+                        <button type="submit" id="submitBtn" class="btn-primary" style="display: none;">Register</button>
+                    </div>
+                </form>
+
+                <div class="login-link">
+                    <p>Already have an account? <a href="login.html">Login here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class RegistrationWizard {
+            constructor() {
+                this.currentStep = 1;
+                this.selectedRole = null;
+                this.validRegistrationKey = null;
+                this.maxSteps = 3;
+                
+                this.initializeEventListeners();
+            }
+
+            initializeEventListeners() {
+                // Navigation buttons
+                document.getElementById('nextBtn').addEventListener('click', () => this.nextStep());
+                document.getElementById('prevBtn').addEventListener('click', () => this.prevStep());
+                document.getElementById('registrationForm').addEventListener('submit', (e) => this.handleSubmit(e));
+
+                // Role selection
+                document.querySelectorAll('.role-card').forEach(card => {
+                    card.addEventListener('click', () => this.selectRole(card.dataset.role));
+                });
+
+                // Registration key validation
+                document.getElementById('registrationKey').addEventListener('input', (e) => {
+                    this.validateRegistrationKey(e.target.value);
+                });
+
+                // Password confirmation
+                document.getElementById('confirmPassword').addEventListener('input', () => {
+                    this.validatePasswords();
+                });
+
+                // League selection handlers
+                document.getElementById('leagueSelect').addEventListener('change', (e) => {
+                    if (e.target.value) {
+                        document.getElementById('league').value = e.target.value;
+                    }
+                });
+
+                document.getElementById('league').addEventListener('input', (e) => {
+                    if (e.target.value) {
+                        document.getElementById('leagueSelect').value = '';
+                    }
+                });
+
+                // Home venue selection handlers
+                document.getElementById('homeVenueSelect').addEventListener('change', (e) => {
+                    if (e.target.value) {
+                        document.getElementById('homeVenue').value = e.target.value;
+                    }
+                });
+
+                document.getElementById('homeVenue').addEventListener('input', (e) => {
+                    if (e.target.value) {
+                        document.getElementById('homeVenueSelect').value = '';
+                    }
+                });
+
+                // Training venue selection handlers
+                document.getElementById('trainingVenueSelect').addEventListener('change', (e) => {
+                    if (e.target.value) {
+                        document.getElementById('trainingVenue').value = e.target.value;
+                    }
+                });
+
+                document.getElementById('trainingVenue').addEventListener('input', (e) => {
+                    if (e.target.value) {
+                        document.getElementById('trainingVenueSelect').value = '';
+                    }
+                });
+            }
+
+            selectRole(role) {
+                this.selectedRole = role;
+                
+                // Update UI
+                document.querySelectorAll('.role-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                document.querySelector(`[data-role="${role}"]`).classList.add('selected');
+
+                // Show/hide registration key section
+                const keySection = document.getElementById('registrationKeySection');
+                if (role === 'join') {
+                    keySection.style.display = 'block';
+                    // Clear any existing validation when switching to join mode
+                    this.validRegistrationKey = null;
+                    document.getElementById('keyValidation').innerHTML = '';
+                } else {
+                    keySection.style.display = 'none';
+                    this.validRegistrationKey = null;
+                    // Set role to coach when creating team
+                    this.selectedRole = 'coach';
+                    // Update required fields for coach
+                    this.updateRequiredFields('coach');
+                }
+
+                // Update required fields based on role
+                this.updateRequiredFields(this.selectedRole);
+            }
+
+            updateRequiredFields(role) {
+                // Coach fields
+                const coachFields = ['teamName', 'league'];
+                // Player fields - none are required currently
+                const playerFields = [];
+
+                if (role === 'coach') {
+                    // Make coach fields required
+                    coachFields.forEach(fieldId => {
+                        const field = document.getElementById(fieldId);
+                        if (field) field.required = true;
+                    });
+                    // Remove required from player fields
+                    playerFields.forEach(fieldId => {
+                        const field = document.getElementById(fieldId);
+                        if (field) field.required = false;
+                    });
+                } else {
+                    // For all non-coach roles (player, manager, parent), remove required from coach fields
+                    coachFields.forEach(fieldId => {
+                        const field = document.getElementById(fieldId);
+                        if (field) field.required = false;
+                    });
+                    // Make player fields required only for players (none currently)
+                    if (role === 'player') {
+                        playerFields.forEach(fieldId => {
+                            const field = document.getElementById(fieldId);
+                            if (field) field.required = true;
+                        });
+                    } else {
+                        // For manager and parent, no fields are required
+                        playerFields.forEach(fieldId => {
+                            const field = document.getElementById(fieldId);
+                            if (field) field.required = false;
+                        });
+                    }
+                }
+            }
+
+            async validateRegistrationKey(key) {
+                const validationDiv = document.getElementById('keyValidation');
+                
+                if (!key || key.length !== 8) {
+                    validationDiv.innerHTML = '';
+                    this.validRegistrationKey = null;
+                    // Clear required fields when no valid key
+                    this.updateRequiredFields('none');
+                    return;
+                }
+
+                try {
+                    const result = window.db.validateRegistrationKey(key.toUpperCase());
+                    
+                    if (result.valid) {
+                        validationDiv.innerHTML = `
+                            <div class="key-validation valid">
+                                ✓ Valid key for team: ${result.team_name} (${result.role})
+                            </div>
+                        `;
+                        this.validRegistrationKey = result;
+                        // Set the actual role from the registration key
+                        this.selectedRole = result.role;
+                        // Update required fields for the determined role
+                        this.updateRequiredFields(result.role);
+                    } else {
+                        validationDiv.innerHTML = `
+                            <div class="key-validation invalid">
+                                ✗ ${result.message}
+                            </div>
+                        `;
+                        this.validRegistrationKey = null;
+                        // Clear required fields when key is invalid
+                        this.updateRequiredFields('none');
+                    }
+                } catch (error) {
+                    console.error('Key validation error:', error);
+                    validationDiv.innerHTML = `
+                        <div class="key-validation invalid">
+                            ✗ Error validating key
+                        </div>
+                    `;
+                    this.validRegistrationKey = null;
+                    // Clear required fields when there's an error
+                    this.updateRequiredFields('none');
+                }
+            }
+
+            validatePasswords() {
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (confirmPassword && password !== confirmPassword) {
+                    document.getElementById('confirmPassword').style.borderColor = '#dc2626';
+                    return false;
+                } else {
+                    document.getElementById('confirmPassword').style.borderColor = '';
+                    return true;
+                }
+            }
+
+            validateStep(step) {
+                if (step === 1) {
+                    const required = ['firstName', 'lastName', 'email', 'phone', 'password', 'confirmPassword'];
+                    const valid = required.every(field => document.getElementById(field).value.trim());
+                    return valid && this.validatePasswords();
+                } else if (step === 2) {
+                    if (!this.selectedRole) return false;
+                    // If joining a team, must have valid registration key
+                    if (this.selectedRole !== 'coach' && !this.validRegistrationKey) return false;
+                    return true;
+                } else if (step === 3) {
+                    if (this.selectedRole === 'coach') {
+                        return document.getElementById('teamName').value.trim() && 
+                               document.getElementById('league').value.trim();
+                    }
+                    return true;
+                }
+                return true;
+            }
+
+            nextStep() {
+                if (!this.validateStep(this.currentStep)) {
+                    this.showMessage('Please fill in all required fields correctly.', 'error');
+                    return;
+                }
+
+                if (this.currentStep < this.maxSteps) {
+                    this.currentStep++;
+                    this.updateStepDisplay();
+                }
+            }
+
+            prevStep() {
+                if (this.currentStep > 1) {
+                    this.currentStep--;
+                    this.updateStepDisplay();
+                }
+            }
+
+            updateStepDisplay() {
+                // Update step indicators
+                for (let i = 1; i <= this.maxSteps; i++) {
+                    const step = document.getElementById(`step${i}`);
+                    if (i < this.currentStep) {
+                        step.className = 'step completed';
+                    } else if (i === this.currentStep) {
+                        step.className = 'step active';
+                    } else {
+                        step.className = 'step';
+                    }
+                }
+
+                // Show/hide step content
+                document.querySelectorAll('.form-step').forEach(step => {
+                    step.classList.remove('active');
+                });
+                document.getElementById(`step${this.currentStep}-content`).classList.add('active');
+
+                // Update navigation buttons
+                document.getElementById('prevBtn').style.display = this.currentStep > 1 ? 'block' : 'none';
+                document.getElementById('nextBtn').style.display = this.currentStep < this.maxSteps ? 'block' : 'none';
+                document.getElementById('submitBtn').style.display = this.currentStep === this.maxSteps ? 'block' : 'none';
+
+                // Show appropriate details section on step 3
+                if (this.currentStep === 3) {
+                    if (this.selectedRole === 'coach') {
+                        document.getElementById('coachDetails').style.display = 'block';
+                        document.getElementById('playerDetails').style.display = 'none';
+                        // Populate dropdowns for coach
+                        this.populateLeagueOptions();
+                        this.populateVenueOptions();
+                    } else if (this.selectedRole === 'player') {
+                        document.getElementById('coachDetails').style.display = 'none';
+                        document.getElementById('playerDetails').style.display = 'block';
+                    } else {
+                        // For manager and parent, hide both sections (no additional details needed)
+                        document.getElementById('coachDetails').style.display = 'none';
+                        document.getElementById('playerDetails').style.display = 'none';
+                    }
+                    
+                    // Ensure required fields are properly set for the current role
+                    this.updateRequiredFields(this.selectedRole);
+                }
+            }
+
+            async handleSubmit(e) {
+                e.preventDefault();
+                
+                // Ensure required fields are properly set before submission
+                const currentRole = this.selectedRole || (this.validRegistrationKey ? this.validRegistrationKey.role : 'player');
+                this.updateRequiredFields(currentRole);
+                
+                // Check if database is available
+                if (typeof window.db === 'undefined') {
+                    console.error('Database not available');
+                    this.showMessage('System error: Database not loaded. Please refresh the page.', 'error');
+                    return;
+                }
+                
+                console.log('Registration submitted - Current step:', this.currentStep, 'Role:', this.selectedRole);
+                console.log('Valid registration key:', this.validRegistrationKey);
+                
+                if (!this.validateStep(this.currentStep)) {
+                    console.log('Validation failed for step:', this.currentStep);
+                    this.showMessage('Please fill in all required fields correctly.', 'error');
+                    return;
+                }
+
+                const submitBtn = document.getElementById('submitBtn');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Creating Account...';
+
+                try {
+                    // Collect form data
+                    const formData = new FormData(e.target);
+                    const userData = Object.fromEntries(formData.entries());
+                    
+                    console.log('Form data collected:', userData);
+
+                    // Create user account
+                    const userResult = await window.db.register({
+                        username: userData.email, // Use email as username
+                        email: userData.email,
+                        phone: userData.phone,
+                        password: userData.password,
+                        first_name: userData.firstName,
+                        last_name: userData.lastName,
+                        role: this.selectedRole
+                    });
+                    
+                    console.log('User registration result:', userResult);
+
+                    if (!userResult.success) {
+                        console.log('User registration failed:', userResult.message);
+                        throw new Error(userResult.message);
+                    }
+
+                    const user = userResult.user;
+                    console.log('User created successfully:', user);
+
+                    if (this.selectedRole === 'coach') {
+                        console.log('Processing coach registration...');
+                        
+                        // Get the final league value (either from dropdown or custom input)
+                        const finalLeague = userData.league || userData.leagueSelect || '';
+                        const finalHomeVenue = userData.homeVenue || userData.homeVenueSelect || '';
+                        const finalTrainingVenue = userData.trainingVenue || userData.trainingVenueSelect || '';
+                        
+                        // Create team
+                        const team = window.db.createTeam({
+                            name: userData.teamName,
+                            league: finalLeague,
+                            home_venue: finalHomeVenue,
+                            training_venue: finalTrainingVenue
+                        });
+
+                        // Add coach to team
+                        window.db.addTeamMember(team.id, user.id, 'coach');
+                        console.log('Coach added to team:', team);
+
+                    } else if (['player', 'manager', 'parent'].includes(this.selectedRole)) {
+                        console.log('Processing team member registration...');
+                        
+                        // Only create player profile with biometrics if role is 'player'
+                        if (this.selectedRole === 'player') {
+                            // Enhanced debugging for biometric data collection
+                            const rawFormEntries = Array.from(formData.entries());
+                            console.log('Raw form data entries:', rawFormEntries);
+                            console.log('User data object:', userData);
+                            
+                            const biometricFields = ['height', 'weight', 'wingspan', 'vertical', 'age', 'jerseyNumber', 'position'];
+                            const biometricDebug = {};
+                            biometricFields.forEach(field => {
+                                biometricDebug[field] = {
+                                    value: userData[field],
+                                    type: typeof userData[field],
+                                    isEmpty: !userData[field]
+                                };
+                                console.log(`${field}:`, userData[field], typeof userData[field]);
+                            });
+                            
+                            const profileData = {
+                                height_cm: parseInt(userData.height) || null,
+                                weight_kg: parseInt(userData.weight) || null,
+                                wingspan_cm: parseInt(userData.wingspan) || null,
+                                vertical_cm: parseInt(userData.vertical) || null,
+                                age: parseInt(userData.age) || null,
+                                jersey_number: parseInt(userData.jerseyNumber) || null,
+                                preferred_position: userData.position
+                            };
+                            
+                            console.log('Creating player profile with data:', profileData);
+                            
+                            // Save debugging info to localStorage
+                            const debugInfo = {
+                                timestamp: new Date().toISOString(),
+                                rawFormEntries,
+                                userData,
+                                biometricDebug,
+                                profileData,
+                                userId: user.id
+                            };
+                            localStorage.setItem('lastRegistrationDebug', JSON.stringify(debugInfo));
+                            
+                            // Create player profile with error handling
+                            let profileResult;
+                            try {
+                                profileResult = window.db.createPlayerProfile(user.id, profileData);
+                                console.log('Player profile creation result:', profileResult);
+                                
+                                if (!profileResult) {
+                                    throw new Error('createPlayerProfile returned null/undefined');
+                                }
+                                
+                            } catch (profileError) {
+                                console.error('CRITICAL ERROR creating player profile:', profileError);
+                                alert(`ERROR: Failed to save player biometric data!\nError: ${profileError.message}\nCheck console for details.`);
+                                
+                                // Still save the error info for debugging
+                                debugInfo.profileError = profileError.message;
+                                localStorage.setItem('lastRegistrationDebug', JSON.stringify(debugInfo));
+                                
+                                // Continue with registration even if profile creation fails
+                                profileResult = { error: profileError.message };
+                            }
+                            
+                            // Update debug info with result
+                            debugInfo.profileResult = profileResult;
+                            localStorage.setItem('lastRegistrationDebug', JSON.stringify(debugInfo));
+                            
+                            // Show alert with key info before redirect
+                            const hasEmptyBiometrics = biometricFields.some(field => !userData[field]);
+                            if (hasEmptyBiometrics) {
+                                alert(`DEBUG: Some biometric fields are empty!\nEmpty fields: ${biometricFields.filter(f => !userData[f]).join(', ')}\nCheck console after redirect for full debug info.`);
+                            }
+                        }
+                        
+                        console.log('Adding user to team:', this.validRegistrationKey.team_id, 'with role:', this.validRegistrationKey.role);
+
+                        // Add to team using registration key
+                        const membershipData = {};
+                        if (this.selectedRole === 'player') {
+                            membershipData.jersey_number = parseInt(userData.jerseyNumber) || null;
+                            membershipData.position = userData.position;
+                        }
+                        
+                        window.db.addTeamMember(
+                            this.validRegistrationKey.team_id, 
+                            user.id, 
+                            this.validRegistrationKey.role,
+                            membershipData
+                        );
+
+                        console.log('Using registration key:', this.validRegistrationKey.key_id);
+                        // Mark registration key as used
+                        window.db.useRegistrationKey(this.validRegistrationKey.key_id);
+                    }
+
+                    console.log('Registration process completed successfully!');
+                    this.showMessage('Registration successful! Redirecting to login...', 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+
+                } catch (error) {
+                    console.error('Registration error:', error);
+                    this.showMessage(error.message || 'Registration failed. Please try again.', 'error');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Register';
+                }
+            }
+
+            showMessage(message, type) {
+                const container = document.getElementById('messageContainer');
+                container.innerHTML = `
+                    <div class="${type}-message">
+                        ${message}
+                    </div>
+                `;
+                container.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            populateLeagueOptions() {
+                try {
+                    const teams = window.db.getTable('teams') || [];
+                    const leagues = [...new Set(teams.map(team => team.league).filter(league => league))];
+                    
+                    const leagueSelect = document.getElementById('leagueSelect');
+                    leagueSelect.innerHTML = '<option value="">Select existing league</option>';
+                    
+                    leagues.forEach(league => {
+                        const option = document.createElement('option');
+                        option.value = league;
+                        option.textContent = league;
+                        leagueSelect.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Error populating league options:', error);
+                }
+            }
+
+            populateVenueOptions() {
+                try {
+                    const teams = window.db.getTable('teams') || [];
+                    const homeVenues = [...new Set(teams.map(team => team.home_venue).filter(venue => venue))];
+                    const trainingVenues = [...new Set(teams.map(team => team.training_venue).filter(venue => venue))];
+                    
+                    // Populate home venue options
+                    const homeVenueSelect = document.getElementById('homeVenueSelect');
+                    homeVenueSelect.innerHTML = '<option value="">Select existing venue</option>';
+                    homeVenues.forEach(venue => {
+                        const option = document.createElement('option');
+                        option.value = venue;
+                        option.textContent = venue;
+                        homeVenueSelect.appendChild(option);
+                    });
+                    
+                    // Populate training venue options
+                    const trainingVenueSelect = document.getElementById('trainingVenueSelect');
+                    trainingVenueSelect.innerHTML = '<option value="">Select existing venue</option>';
+                    trainingVenues.forEach(venue => {
+                        const option = document.createElement('option');
+                        option.value = venue;
+                        option.textContent = venue;
+                        trainingVenueSelect.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Error populating venue options:', error);
+                }
+            }
+        }
+
+        // Initialize when DOM loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.registrationWizard = new RegistrationWizard();
+        });
+    </script>
+
+    <script src="js/database.js"></script>
+</body>
+</html>

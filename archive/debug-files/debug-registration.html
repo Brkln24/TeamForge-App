@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Registration - TeamForge</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        .debug-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+        .test-section h3 {
+            margin: 0 0 1rem 0;
+            color: #333;
+        }
+        .result {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 4px;
+        }
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .result.info {
+            background: #e7f3ff;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        input, select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 0.25rem;
+            font-size: 1rem;
+        }
+        .form-group {
+            margin: 1rem 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>Registration Debug Tool</h1>
+        
+        <div class="test-section">
+            <h3>1. Database Connectivity Test</h3>
+            <button onclick="testDatabase()">Test Database Connection</button>
+            <div id="dbResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Generate Test Registration Key</h3>
+            <button onclick="generateTestKey()">Generate Test Key</button>
+            <div id="keyResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Test Key Validation</h3>
+            <div class="form-group">
+                <label for="testKey">Enter Registration Key:</label>
+                <input type="text" id="testKey" placeholder="Enter 8-character key" maxlength="8">
+                <button onclick="testKeyValidation()">Validate Key</button>
+            </div>
+            <div id="validationResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Test Player Registration</h3>
+            <div class="form-group">
+                <label for="playerEmail">Email:</label>
+                <input type="email" id="playerEmail" value="testplayer@example.com">
+            </div>
+            <div class="form-group">
+                <label for="playerFirstName">First Name:</label>
+                <input type="text" id="playerFirstName" value="Test">
+            </div>
+            <div class="form-group">
+                <label for="playerLastName">Last Name:</label>
+                <input type="text" id="playerLastName" value="Player">
+            </div>
+            <div class="form-group">
+                <label for="playerPhone">Phone:</label>
+                <input type="tel" id="playerPhone" value="+1234567890">
+            </div>
+            <div class="form-group">
+                <label for="playerPassword">Password:</label>
+                <input type="password" id="playerPassword" value="testpass123">
+            </div>
+            <div class="form-group">
+                <label for="regKey">Registration Key:</label>
+                <input type="text" id="regKey" placeholder="8-character key">
+            </div>
+            <button onclick="testPlayerRegistration()">Register Player</button>
+            <div id="registrationResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>6. Fix Missing Player Biometrics</h3>
+            <div class="form-group">
+                <label for="fixPlayerEmail">Player Email:</label>
+                <input type="email" id="fixPlayerEmail" value="brooklyn@example.com" placeholder="Enter player email">
+            </div>
+            <div class="form-group">
+                <label for="fixHeight">Height (cm):</label>
+                <input type="number" id="fixHeight" value="185" placeholder="Height in cm">
+            </div>
+            <div class="form-group">
+                <label for="fixWeight">Weight (kg):</label>
+                <input type="number" id="fixWeight" value="75" placeholder="Weight in kg">
+            </div>
+            <div class="form-group">
+                <label for="fixWingspan">Wingspan (cm):</label>
+                <input type="number" id="fixWingspan" value="190" placeholder="Wingspan in cm">
+            </div>
+            <div class="form-group">
+                <label for="fixVertical">Vertical (cm):</label>
+                <input type="number" id="fixVertical" value="65" placeholder="Vertical jump in cm">
+            </div>
+            <div class="form-group">
+                <label for="fixAge">Age:</label>
+                <input type="number" id="fixAge" value="22" placeholder="Age">
+            </div>
+            <div class="form-group">
+                <label for="fixJersey">Jersey Number:</label>
+                <input type="number" id="fixJersey" value="23" placeholder="Jersey number">
+            </div>
+            <div class="form-group">
+                <label for="fixPosition">Position:</label>
+                <select id="fixPosition">
+                    <option value="Point Guard">Point Guard</option>
+                    <option value="Shooting Guard" selected>Shooting Guard</option>
+                    <option value="Small Forward">Small Forward</option>
+                    <option value="Power Forward">Power Forward</option>
+                    <option value="Center">Center</option>
+                </select>
+            </div>
+            <button onclick="fixPlayerBiometrics()">Add/Update Player Biometrics</button>
+            <div id="fixResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. Database State</h3>
+            <button onclick="showDatabaseState()">Show Database Contents</button>
+            <div id="dbState"></div>
+        </div>
+    </div>
+
+    <script src="js/database.js"></script>
+    <script>
+        let generatedTestKey = null;
+
+        function testDatabase() {
+            const result = document.getElementById('dbResult');
+            try {
+                if (typeof window.db === 'undefined') {
+                    result.innerHTML = '<div class="result error">❌ Database not loaded</div>';
+                    return;
+                }
+                
+                const users = window.db.getTable('users') || [];
+                const teams = window.db.getTable('teams') || [];
+                const keys = window.db.getTable('registration_keys') || [];
+                
+                result.innerHTML = `
+                    <div class="result success">
+                        ✅ Database connected successfully<br>
+                        Users: ${users.length}<br>
+                        Teams: ${teams.length}<br>
+                        Registration Keys: ${keys.length}
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `<div class="result error">❌ Database error: ${error.message}</div>`;
+            }
+        }
+
+        function generateTestKey() {
+            const result = document.getElementById('keyResult');
+            try {
+                // First ensure we have a coach and team
+                let coach = window.db.getTable('users')?.find(u => u.role === 'coach');
+                if (!coach) {
+                    // Create a test coach
+                    const coachResult = window.db.register({
+                        username: 'testcoach@example.com',
+                        email: 'testcoach@example.com',
+                        phone: '+1234567890',
+                        password: 'testpass123',
+                        first_name: 'Test',
+                        last_name: 'Coach',
+                        role: 'coach'
+                    });
+                    coach = coachResult.user;
+                }
+
+                // Ensure coach has a team
+                let teams = window.db.getUserTeams(coach.id);
+                let team;
+                if (teams.length === 0) {
+                    team = window.db.createTeam({
+                        name: 'Debug Team',
+                        league: 'Test League',
+                        home_venue: 'Test Court',
+                        training_venue: 'Practice Gym'
+                    });
+                    window.db.addTeamMember(team.id, coach.id, 'coach');
+                } else {
+                    team = teams[0];
+                }
+
+                // Generate registration key
+                const key = window.db.generateRegistrationKey(team.id, 'player', 7);
+                generatedTestKey = key.key;
+                
+                result.innerHTML = `
+                    <div class="result success">
+                        ✅ Generated key: <strong>${key.key}</strong><br>
+                        Team: ${team.name}<br>
+                        Role: ${key.role}<br>
+                        Expires: ${new Date(key.expires_at).toLocaleDateString()}
+                    </div>
+                `;
+                
+                // Auto-fill the validation test
+                document.getElementById('testKey').value = key.key;
+                document.getElementById('regKey').value = key.key;
+                
+            } catch (error) {
+                result.innerHTML = `<div class="result error">❌ Error generating key: ${error.message}</div>`;
+                console.error('Key generation error:', error);
+            }
+        }
+
+        function testKeyValidation() {
+            const result = document.getElementById('validationResult');
+            const key = document.getElementById('testKey').value.trim().toUpperCase();
+            
+            if (!key) {
+                result.innerHTML = '<div class="result error">❌ Please enter a key</div>';
+                return;
+            }
+            
+            try {
+                const validation = window.db.validateRegistrationKey(key);
+                
+                if (validation.valid) {
+                    result.innerHTML = `
+                        <div class="result success">
+                            ✅ Key is valid<br>
+                            Team: ${validation.team_name}<br>
+                            Role: ${validation.role}<br>
+                            Team ID: ${validation.team_id}<br>
+                            Key ID: ${validation.key_id}
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `<div class="result error">❌ ${validation.message}</div>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<div class="result error">❌ Validation error: ${error.message}</div>`;
+                console.error('Validation error:', error);
+            }
+        }
+
+        function testPlayerRegistration() {
+            const result = document.getElementById('registrationResult');
+            
+            try {
+                const email = document.getElementById('playerEmail').value;
+                const firstName = document.getElementById('playerFirstName').value;
+                const lastName = document.getElementById('playerLastName').value;
+                const phone = document.getElementById('playerPhone').value;
+                const password = document.getElementById('playerPassword').value;
+                const regKey = document.getElementById('regKey').value.trim().toUpperCase();
+                
+                // Validate required fields
+                if (!email || !firstName || !lastName || !phone || !password || !regKey) {
+                    result.innerHTML = '<div class="result error">❌ Please fill in all fields</div>';
+                    return;
+                }
+                
+                // Validate registration key first
+                const keyValidation = window.db.validateRegistrationKey(regKey);
+                if (!keyValidation.valid) {
+                    result.innerHTML = `<div class="result error">❌ Invalid registration key: ${keyValidation.message}</div>`;
+                    return;
+                }
+                
+                result.innerHTML = '<div class="result info">⏳ Registering player...</div>';
+                
+                // Register user
+                const userResult = window.db.register({
+                    username: email,
+                    email: email,
+                    phone: phone,
+                    password: password,
+                    first_name: firstName,
+                    last_name: lastName,
+                    role: 'player'
+                });
+                
+                if (!userResult.success) {
+                    result.innerHTML = `<div class="result error">❌ User registration failed: ${userResult.message}</div>`;
+                    return;
+                }
+                
+                const user = userResult.user;
+                
+                // Create player profile
+                window.db.createPlayerProfile(user.id, {
+                    age: 18,
+                    jersey_number: 99,
+                    preferred_position: 'Guard'
+                });
+                
+                // Add to team
+                window.db.addTeamMember(
+                    keyValidation.team_id,
+                    user.id,
+                    keyValidation.role,
+                    {
+                        jersey_number: 99,
+                        position: 'Guard'
+                    }
+                );
+                
+                // Use registration key
+                window.db.useRegistrationKey(keyValidation.key_id);
+                
+                result.innerHTML = `
+                    <div class="result success">
+                        ✅ Player registration successful!<br>
+                        User ID: ${user.id}<br>
+                        Team: ${keyValidation.team_name}<br>
+                        Role: ${keyValidation.role}
+                    </div>
+                `;
+                
+            } catch (error) {
+                result.innerHTML = `<div class="result error">❌ Registration error: ${error.message}</div>`;
+                console.error('Registration error:', error);
+            }
+        }
+
+        function fixPlayerBiometrics() {
+            const result = document.getElementById('fixResult');
+            try {
+                const email = document.getElementById('fixPlayerEmail').value;
+                const height = parseInt(document.getElementById('fixHeight').value) || null;
+                const weight = parseInt(document.getElementById('fixWeight').value) || null;
+                const wingspan = parseInt(document.getElementById('fixWingspan').value) || null;
+                const vertical = parseInt(document.getElementById('fixVertical').value) || null;
+                const age = parseInt(document.getElementById('fixAge').value) || null;
+                const jersey = parseInt(document.getElementById('fixJersey').value) || null;
+                const position = document.getElementById('fixPosition').value;
+                
+                if (!email) {
+                    result.innerHTML = '<div class="result error">❌ Please enter player email</div>';
+                    return;
+                }
+                
+                // Find the user
+                const users = window.db.getTable('users') || [];
+                const user = users.find(u => u.email === email);
+                
+                if (!user) {
+                    result.innerHTML = `<div class="result error">❌ User not found with email: ${email}</div>`;
+                    return;
+                }
+                
+                // Update or create player profile
+                const profiles = window.db.getTable('player_profiles') || [];
+                let profileIndex = profiles.findIndex(p => p.user_id === user.id);
+                
+                const profileData = {
+                    user_id: user.id,
+                    height_cm: height,
+                    weight_kg: weight,
+                    wingspan_cm: wingspan,
+                    vertical_cm: vertical,
+                    age: age,
+                    jersey_number: jersey,
+                    preferred_position: position,
+                    created_at: new Date().toISOString()
+                };
+                
+                if (profileIndex >= 0) {
+                    // Update existing profile
+                    profiles[profileIndex] = { ...profiles[profileIndex], ...profileData };
+                    result.innerHTML = '<div class="result success">✅ Player profile updated successfully!</div>';
+                } else {
+                    // Create new profile
+                    profileData.id = window.db.generateId();
+                    profiles.push(profileData);
+                    result.innerHTML = '<div class="result success">✅ Player profile created successfully!</div>';
+                }
+                
+                window.db.setTable('player_profiles', profiles);
+                
+                // Also update team membership with jersey number and position
+                const memberships = window.db.getTable('team_memberships') || [];
+                const membershipIndex = memberships.findIndex(m => m.user_id === user.id && m.is_active);
+                
+                if (membershipIndex >= 0) {
+                    memberships[membershipIndex].jersey_number = jersey;
+                    memberships[membershipIndex].position = position;
+                    window.db.setTable('team_memberships', memberships);
+                }
+                
+                result.innerHTML += `
+                    <div class="result info">
+                        <h4>Updated Data:</h4>
+                        <pre>${JSON.stringify(profileData, null, 2)}</pre>
+                    </div>
+                `;
+                
+            } catch (error) {
+                result.innerHTML = `<div class="result error">❌ Error: ${error.message}</div>`;
+                console.error('Fix biometrics error:', error);
+            }
+        }
+
+        function showDatabaseState() {
+            const result = document.getElementById('dbState');
+            try {
+                const users = window.db.getTable('users') || [];
+                const teams = window.db.getTable('teams') || [];
+                const memberships = window.db.getTable('team_memberships') || [];
+                const keys = window.db.getTable('registration_keys') || [];
+                const profiles = window.db.getTable('player_profiles') || [];
+                
+                result.innerHTML = `
+                    <div class="result info">
+                        <h4>Database Contents:</h4>
+                        <pre>${JSON.stringify({
+                            users: users.map(u => ({id: u.id, email: u.email, role: u.role})),
+                            teams: teams.map(t => ({id: t.id, name: t.name})),
+                            memberships: memberships.map(m => ({team_id: m.team_id, user_id: m.user_id, role: m.role, is_active: m.is_active})),
+                            registration_keys: keys.map(k => ({key: k.key, team_id: k.team_id, role: k.role, is_active: k.is_active, uses_remaining: k.uses_remaining})),
+                            player_profiles: profiles.map(p => ({user_id: p.user_id, jersey_number: p.jersey_number, position: p.preferred_position}))
+                        }, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `<div class="result error">❌ Error reading database: ${error.message}</div>`;
+            }
+        }
+
+        // Auto-test database connection on load
+        window.addEventListener('load', () => {
+            setTimeout(testDatabase, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Games - TeamForge</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a202c;
+            color: white;
+        }
+        .section {
+            background: #2d3748;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #3182ce;
+        }
+        .error { color: #ef4444; }
+        .success { color: #22c55e; }
+        .warning { color: #f59e0b; }
+        .button {
+            background: #3182ce;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .button:hover { background: #2c5aa0; }
+        .button.danger { background: #ef4444; }
+        .button.danger:hover { background: #dc2626; }
+        .button.success { background: #22c55e; }
+        .button.success:hover { background: #16a34a; }
+        pre {
+            background: #1a202c;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .game-item {
+            background: #4a5568;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fix Games - TeamForge</h1>
+    
+    <div class="section">
+        <h2>🔍 Current Status</h2>
+        <div id="status">Loading...</div>
+    </div>
+
+    <div class="section">
+        <h2>🛠️ Quick Fixes</h2>
+        <button class="button success" onclick="createProperTestGame()">Create New Test Game (Recommended)</button>
+        <button class="button" onclick="fixExistingGames()">Fix Existing Games</button>
+        <button class="button" onclick="debugCurrentGame()">🔍 Debug Current Game Issue</button>
+        <button class="button danger" onclick="clearAllGames()">Clear All Games (Reset)</button>
+    </div>
+
+    <div class="section">
+        <h2>📋 Games List</h2>
+        <div id="gamesList">Loading...</div>
+    </div>
+
+    <div class="section">
+        <h2>📋 Teams List</h2>
+        <div id="teamsList">Loading...</div>
+    </div>
+
+    <script src="../../js/database.js"></script>
+    <script src="../../js/auth.js"></script>
+    <script>
+        let db;
+
+        function init() {
+            try {
+                console.log('Starting initialization...');
+                
+                // Wait a moment for scripts to load
+                setTimeout(() => {
+                    try {
+                        // Check if DatabaseManager is available
+                        if (typeof DatabaseManager === 'undefined') {
+                            document.getElementById('status').innerHTML = '<p class="error">❌ DatabaseManager not loaded. Please check if ../../js/database.js exists and loads properly.</p>';
+                            return;
+                        }
+                        
+                        // Initialize database
+                        if (!window.db) {
+                            window.db = new DatabaseManager();
+                        }
+                        
+                        db = window.db;
+                        
+                        // Check if database is working
+                        if (!db || typeof db.getTable !== 'function') {
+                            document.getElementById('status').innerHTML = '<p class="error">❌ Database initialization failed - getTable method not available.</p>';
+                            return;
+                        }
+                        
+                        console.log('Database initialized successfully');
+                        updateStatus();
+                        listGames();
+                        listTeams();
+                    } catch (innerError) {
+                        console.error('Inner initialization error:', innerError);
+                        document.getElementById('status').innerHTML = `<p class="error">❌ Database setup error: ${innerError.message}</p>`;
+                    }
+                }, 100);
+                
+            } catch (error) {
+                console.error('Initialization error:', error);
+                document.getElementById('status').innerHTML = `<p class="error">❌ Initialization error: ${error.message}</p>`;
+            }
+        }
+
+        function updateStatus() {
+            const events = db.getTable('events') || [];
+            const games = events.filter(e => e.event_type === 'game');
+            const gamesWithOpponents = games.filter(g => g.opponent_team_id);
+            const teams = db.getTable('teams') || [];
+            const teamsWithLeagues = teams.filter(t => t.league);
+
+            document.getElementById('status').innerHTML = `
+                <p>📊 <strong>Games:</strong> ${games.length} total, ${gamesWithOpponents.length} with opponents</p>
+                <p>🏀 <strong>Teams:</strong> ${teams.length} total, ${teamsWithLeagues.length} with leagues</p>
+                <p class="${games.length > 0 && gamesWithOpponents.length === 0 ? 'error' : 'success'}">
+                    ${games.length > 0 && gamesWithOpponents.length === 0 ? 
+                        '⚠️ All games are missing opponent teams!' : 
+                        '✅ Status looks good'}
+                </p>
+            `;
+        }
+
+        function listGames() {
+            const events = db.getTable('events') || [];
+            const games = events.filter(e => e.event_type === 'game');
+            
+            if (games.length === 0) {
+                document.getElementById('gamesList').innerHTML = '<p class="warning">No games found</p>';
+                return;
+            }
+
+            let html = '';
+            games.forEach((game, index) => {
+                const homeTeam = db.getTeamById(game.team_id);
+                const awayTeam = game.opponent_team_id ? db.getTeamById(game.opponent_team_id) : null;
+                
+                html += `
+                    <div class="game-item">
+                        <h4>${game.title || 'Game ' + (index + 1)}</h4>
+                        <p><strong>ID:</strong> ${game.id}</p>
+                        <p><strong>Home Team:</strong> ${homeTeam ? homeTeam.name : 'NOT FOUND'} (${game.team_id})</p>
+                        <p><strong>Away Team:</strong> 
+                            ${game.opponent_team_id ? 
+                                (awayTeam ? awayTeam.name : `NOT FOUND (${game.opponent_team_id})`) : 
+                                '<span class="error">NO OPPONENT SET</span>'}
+                        </p>
+                        <p><strong>Date:</strong> ${new Date(game.event_date).toLocaleString()}</p>
+                        <a href="stats-entry.html?gameId=${game.id}" class="button">Open in Stats Entry</a>
+                        <button class="button danger" onclick="deleteGame('${game.id}')">Delete</button>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('gamesList').innerHTML = html;
+        }
+
+        function listTeams() {
+            const teams = db.getTable('teams') || [];
+            
+            if (teams.length === 0) {
+                document.getElementById('teamsList').innerHTML = '<p class="warning">No teams found</p>';
+                return;
+            }
+
+            let html = '';
+            teams.forEach(team => {
+                const players = db.getTeamPlayers(team.id) || [];
+                html += `
+                    <div class="game-item">
+                        <h4>${team.name}</h4>
+                        <p><strong>ID:</strong> ${team.id}</p>
+                        <p><strong>League:</strong> ${team.league || '<span class="error">NO LEAGUE</span>'}</p>
+                        <p><strong>Players:</strong> ${players.length}</p>
+                        <p><strong>Coach:</strong> ${team.coach_id || 'None'}</p>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('teamsList').innerHTML = html;
+        }
+
+        function createProperTestGame() {
+            try {
+                console.log('Starting createProperTestGame...');
+                
+                // Check if database is available
+                if (!db) {
+                    alert('Database not initialized. Please refresh the page.');
+                    return;
+                }
+                
+                console.log('Database check passed');
+                
+                // Get all teams
+                const teams = db.getTable('teams') || [];
+                console.log('Found teams:', teams);
+                
+                const teamsWithLeagues = teams.filter(t => t.league);
+                console.log('Teams with leagues:', teamsWithLeagues);
+                
+                if (teamsWithLeagues.length < 2) {
+                    console.log('Need more teams, creating test teams...');
+                    createTestTeams();
+                    
+                    // Refresh teams list after creation
+                    const updatedTeams = db.getTable('teams') || [];
+                    const availableTeams = updatedTeams.filter(t => t.league);
+                    console.log('Updated teams after creation:', availableTeams);
+                    
+                    if (availableTeams.length < 2) {
+                        alert('Failed to create enough teams');
+                        return;
+                    }
+                    
+                    // Use the newly created teams
+                    teamsWithLeagues.length = 0;
+                    teamsWithLeagues.push(...availableTeams);
+                }
+                
+                // Create a proper game with opponent
+                const homeTeam = teamsWithLeagues[0];
+                const awayTeam = teamsWithLeagues[1];
+                
+                console.log('Creating game with:', homeTeam.name, 'vs', awayTeam.name);
+                
+                const testGame = {
+                    id: db.generateId(),
+                    team_id: homeTeam.id,
+                    opponent_team_id: awayTeam.id, // This is the key part that was missing!
+                    title: `${homeTeam.name} vs ${awayTeam.name}`,
+                    description: 'Fixed test basketball game with proper opponent',
+                    event_date: new Date().toISOString(),
+                    event_type: 'game',
+                    location: 'Test Gymnasium',
+                    created_by: db.getCurrentUser()?.id || 'system',
+                    created_at: new Date().toISOString(),
+                    is_active: true
+                };
+                
+                console.log('Game object created:', testGame);
+                
+                // Save the game
+                const events = db.getTable('events') || [];
+                events.push(testGame);
+                db.setTable('events', events);
+                
+                console.log('Game saved to database');
+                
+                alert(`✅ Created proper test game: ${testGame.title}\\n\\nGame ID: ${testGame.id}\\n\\nYou can now open this game in stats entry and both teams should appear!`);
+                
+                // Refresh displays
+                updateStatus();
+                listGames();
+                
+            } catch (error) {
+                console.error('Error creating test game:', error);
+                alert('Error creating test game: ' + error.message + '\\n\\nCheck the console for more details.');
+            }
+        }
+
+        function createTestTeams() {
+            try {
+                console.log('Creating test teams...');
+                
+                // Create two test teams with proper structure
+                const user = db.getCurrentUser();
+                console.log('Current user:', user);
+                
+                // If no user, create a test user
+                if (!user) {
+                    console.log('No user found, creating test user...');
+                    const users = db.getTable('users') || [];
+                    const testUser = {
+                        id: db.generateId(),
+                        email: 'testcoach@teamforge.com',
+                        password: 'password123',
+                        firstName: 'Test',
+                        lastName: 'Coach',
+                        role: 'coach',
+                        created_at: new Date().toISOString(),
+                        is_active: true
+                    };
+                    users.push(testUser);
+                    db.setTable('users', users);
+                    
+                    // Set as current user
+                    localStorage.setItem('teamforge_current_user', JSON.stringify(testUser));
+                    console.log('Created and set test user:', testUser);
+                }
+
+                const currentUser = db.getCurrentUser();
+                const teams = db.getTable('teams') || [];
+                
+                // Team 1
+                const team1 = {
+                    id: db.generateId(),
+                    name: 'U18 Balwyn 1',
+                    league: 'EDJBA AR',
+                    coach_id: currentUser.id,
+                    created_by: currentUser.id,
+                    created_at: new Date().toISOString(),
+                    is_active: true
+                };
+                
+                // Team 2
+                const team2 = {
+                    id: db.generateId(),
+                    name: 'The Fellas',
+                    league: 'EDJBA AR',
+                    coach_id: currentUser.id,
+                    created_by: currentUser.id,
+                    created_at: new Date().toISOString(),
+                    is_active: true
+                };
+                
+                teams.push(team1, team2);
+                db.setTable('teams', teams);
+                
+                console.log('Teams created:', team1, team2);
+                
+                // Create some test players for each team
+                createTestPlayers(team1.id, 'Team1');
+                createTestPlayers(team2.id, 'Team2');
+                
+                console.log('Test teams and players created successfully');
+                
+            } catch (error) {
+                console.error('Error creating test teams:', error);
+                throw error;
+            }
+        }
+
+        function createTestPlayers(teamId, teamPrefix) {
+            const players = [
+                { firstName: 'John', lastName: 'Smith', jerseyNumber: '1' },
+                { firstName: 'Mike', lastName: 'Johnson', jerseyNumber: '2' },
+                { firstName: 'Chris', lastName: 'Wilson', jerseyNumber: '3' },
+                { firstName: 'David', lastName: 'Brown', jerseyNumber: '4' },
+                { firstName: 'Alex', lastName: 'Davis', jerseyNumber: '5' }
+            ];
+            
+            const playerProfiles = db.getTable('player_profiles') || [];
+            const teamMemberships = db.getTable('team_memberships') || [];
+            const users = db.getTable('users') || [];
+            
+            players.forEach((playerData, index) => {
+                const playerId = db.generateId();
+                const userId = db.generateId();
+                
+                // Create user account
+                users.push({
+                    id: userId,
+                    email: `${teamPrefix.toLowerCase().replace(' ', '')}.player${index + 1}@test.com`,
+                    password: 'password123',
+                    firstName: playerData.firstName,
+                    lastName: playerData.lastName,
+                    role: 'player',
+                    created_at: new Date().toISOString(),
+                    is_active: true
+                });
+                
+                // Create player profile
+                playerProfiles.push({
+                    id: playerId,
+                    user_id: userId,
+                    firstName: playerData.firstName,
+                    lastName: playerData.lastName,
+                    jersey_number: playerData.jerseyNumber,
+                    position: 'Guard',
+                    height: '6\'1"',
+                    weight: '175 lbs',
+                    date_of_birth: '2005-01-01',
+                    emergency_contact: 'Parent',
+                    emergency_phone: '555-0100',
+                    created_at: new Date().toISOString(),
+                    is_active: true
+                });
+                
+                // Add team membership
+                teamMemberships.push({
+                    id: db.generateId(),
+                    user_id: userId,
+                    team_id: teamId,
+                    role: 'player',
+                    joined_at: new Date().toISOString(),
+                    is_active: true
+                });
+            });
+            
+            db.setTable('users', users);
+            db.setTable('player_profiles', playerProfiles);
+            db.setTable('team_memberships', teamMemberships);
+        }
+
+        function fixExistingGames() {
+            const events = db.getTable('events') || [];
+            const games = events.filter(e => e.event_type === 'game');
+            const gamesWithoutOpponents = games.filter(g => !g.opponent_team_id);
+            
+            if (gamesWithoutOpponents.length === 0) {
+                alert('No games need fixing - all games already have opponents!');
+                return;
+            }
+            
+            const teams = db.getTable('teams') || [];
+            const availableTeams = teams.filter(t => t.league);
+            
+            if (availableTeams.length < 2) {
+                alert('Need at least 2 teams to fix games. Creating test teams first...');
+                createTestTeams();
+                return;
+            }
+            
+            let fixed = 0;
+            gamesWithoutOpponents.forEach(game => {
+                // Find a suitable opponent (different from home team)
+                const homeTeam = teams.find(t => t.id === game.team_id);
+                const possibleOpponents = availableTeams.filter(t => 
+                    t.id !== game.team_id && 
+                    t.league === homeTeam?.league
+                );
+                
+                if (possibleOpponents.length > 0) {
+                    game.opponent_team_id = possibleOpponents[0].id;
+                    game.title = `${homeTeam?.name || 'Team'} vs ${possibleOpponents[0].name}`;
+                    fixed++;
+                }
+            });
+            
+            if (fixed > 0) {
+                db.setTable('events', events);
+                alert(`✅ Fixed ${fixed} games by adding opponent teams!`);
+                updateStatus();
+                listGames();
+            } else {
+                alert('Could not fix games - no suitable opponents found');
+            }
+        }
+
+        function clearAllGames() {
+            if (confirm('Are you sure you want to delete ALL games? This cannot be undone!')) {
+                const events = db.getTable('events') || [];
+                const nonGameEvents = events.filter(e => e.event_type !== 'game');
+                db.setTable('events', nonGameEvents);
+                
+                alert('All games have been deleted');
+                updateStatus();
+                listGames();
+            }
+        }
+
+        function debugCurrentGame() {
+            try {
+                console.log('=== COMPREHENSIVE GAME DEBUG ===');
+                
+                // Get all relevant data
+                const events = db.getTable('events') || [];
+                const teams = db.getTable('teams') || [];
+                const gameStats = db.getTable('game_stats') || [];
+                const teamGameStats = db.getTable('team_game_stats') || [];
+                const users = db.getTable('users') || [];
+                const teamMemberships = db.getTable('team_memberships') || [];
+                
+                console.log('Raw Events:', events);
+                console.log('Raw Teams:', teams);
+                console.log('Raw Game Stats:', gameStats);
+                console.log('Raw Team Game Stats:', teamGameStats);
+                console.log('Raw Users:', users);
+                console.log('Raw Team Memberships:', teamMemberships);
+                
+                const games = events.filter(e => e.event_type === 'game');
+                console.log('Filtered Games:', games);
+                
+                if (games.length === 0) {
+                    alert('No games found! This is the issue - you need to create a game first.');
+                    return;
+                }
+                
+                // Analyze each game
+                games.forEach((game, index) => {
+                    console.log(`\n--- GAME ${index + 1} ANALYSIS ---`);
+                    console.log('Game Object:', game);
+                    
+                    const homeTeam = teams.find(t => t.id === game.team_id);
+                    const awayTeam = game.opponent_team_id ? teams.find(t => t.id === game.opponent_team_id) : null;
+                    
+                    console.log('Home Team Found:', homeTeam);
+                    console.log('Away Team Found:', awayTeam);
+                    
+                    if (!homeTeam) {
+                        console.log('❌ HOME TEAM NOT FOUND - Game team_id:', game.team_id);
+                    }
+                    
+                    if (!game.opponent_team_id) {
+                        console.log('❌ NO OPPONENT_TEAM_ID SET - This is likely the main issue!');
+                    } else if (!awayTeam) {
+                        console.log('❌ AWAY TEAM NOT FOUND - Game opponent_team_id:', game.opponent_team_id);
+                    }
+                    
+                    // Check players for each team
+                    if (homeTeam) {
+                        const homePlayers = teamMemberships.filter(tm => tm.team_id === homeTeam.id);
+                        console.log(`Home Team Players (${homeTeam.name}):`, homePlayers.length, homePlayers);
+                    }
+                    
+                    if (awayTeam) {
+                        const awayPlayers = teamMemberships.filter(tm => tm.team_id === awayTeam.id);
+                        console.log(`Away Team Players (${awayTeam.name}):`, awayPlayers.length, awayPlayers);
+                    }
+                    
+                    // Check game stats for this game
+                    const thisGameStats = gameStats.filter(gs => gs.game_id === game.id);
+                    console.log(`Game Stats for Game ${game.id}:`, thisGameStats);
+                    
+                    // Check team stats for this game
+                    const thisTeamStats = teamGameStats.filter(ts => ts.game_id === game.id);
+                    console.log(`Team Stats for Game ${game.id}:`, thisTeamStats);
+                    
+                    // Analyze team ID assignments in game stats
+                    if (thisGameStats.length > 0) {
+                        const uniqueTeamIds = [...new Set(thisGameStats.map(gs => gs.team_id))];
+                        console.log('Unique Team IDs in Game Stats:', uniqueTeamIds);
+                        
+                        if (uniqueTeamIds.length === 1) {
+                            console.log('🚨 PROBLEM FOUND: All players assigned to same team ID:', uniqueTeamIds[0]);
+                            
+                            // Check if this is the home team ID
+                            if (uniqueTeamIds[0] === game.team_id) {
+                                console.log('🔍 ALL STATS ASSIGNED TO HOME TEAM - This is your reported issue!');
+                                console.log('❌ Away players are either missing or being assigned wrong team_id');
+                            }
+                        } else {
+                            console.log('✅ Team IDs look separated');
+                        }
+                        
+                        // Show team ID breakdown
+                        uniqueTeamIds.forEach(teamId => {
+                            const playersWithThisTeamId = thisGameStats.filter(gs => gs.team_id === teamId);
+                            const teamName = teams.find(t => t.id === teamId)?.name || 'Unknown Team';
+                            const isHomeTeam = teamId === game.team_id;
+                            const isAwayTeam = teamId === game.opponent_team_id;
+                            
+                            console.log(`Team ID ${teamId} (${teamName}) ${isHomeTeam ? '[HOME]' : isAwayTeam ? '[AWAY]' : '[OTHER]'}: ${playersWithThisTeamId.length} players`);
+                            
+                            if (isHomeTeam && playersWithThisTeamId.length > 5) {
+                                console.log('🚨 SUSPICIOUS: Home team has many players - might include away players!');
+                            }
+                        });
+                    }
+                });
+                
+                console.log('=== END COMPREHENSIVE DEBUG ===');
+                
+                alert(`Debug complete! Check the console for detailed analysis.\n\nKey things to look for:\n1. Is opponent_team_id set for your games?\n2. Are there players from both teams?\n3. Are game stats showing same team_id for all players?`);
+                
+            } catch (error) {
+                console.error('Debug error:', error);
+                alert('Debug error: ' + error.message);
+            }
+        }
+
+        function deleteGame(gameId) {
+            if (confirm('Delete this game?')) {
+                const events = db.getTable('events') || [];
+                const filteredEvents = events.filter(e => e.id !== gameId);
+                db.setTable('events', filteredEvents);
+                
+                updateStatus();
+                listGames();
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

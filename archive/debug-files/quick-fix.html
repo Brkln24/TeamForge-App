@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Fix - Create Test Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a202c;
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .section {
+            background: #2d3748;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #3182ce;
+        }
+        .button {
+            background: #3182ce;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .button:hover { background: #2c5aa0; }
+        .button.success { background: #22c55e; }
+        .button.success:hover { background: #16a34a; }
+        .success { color: #22c55e; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        pre {
+            background: #1a202c;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+        #output {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏀 Quick Fix - Create Test Game</h1>
+        
+        <div class="section">
+            <h2>Create Complete Test Data</h2>
+            <p>This will create:</p>
+            <ul>
+                <li>✅ Test user and login session</li>
+                <li>✅ Two teams with league field: "U18 Balwyn 1" and "The Fellas"</li>
+                <li>✅ 5 players for each team (10 total)</li>
+                <li>✅ A game with proper opponent_team_id</li>
+            </ul>
+            <button class="button success" onclick="createCompleteTestData()">Create Complete Test Data</button>
+        </div>
+
+        <div class="section">
+            <h2>Test Your Fix</h2>
+            <p>After creating the test data:</p>
+            <ol>
+                <li>Go to <a href="calendar.html" style="color: #3182ce;">Calendar</a> to see the game</li>
+                <li>Click "📊" on the game to open Stats Entry</li>
+                <li>Both teams should appear with players!</li>
+            </ol>
+        </div>
+
+        <div id="output"></div>
+    </div>
+
+    <script>
+        function createCompleteTestData() {
+            try {
+                const output = document.getElementById('output');
+                output.innerHTML = '<div class="section"><h3>Creating test data...</h3><div id="log"></div></div>';
+                const log = document.getElementById('log');
+                
+                function addLog(message, type = '') {
+                    log.innerHTML += `<p class="${type}">${message}</p>`;
+                }
+                
+                // Initialize localStorage database tables
+                const tables = {
+                    users: [],
+                    teams: [],
+                    team_memberships: [],
+                    player_profiles: [],
+                    events: []
+                };
+                
+                // Load existing data or create new
+                Object.keys(tables).forEach(table => {
+                    const existing = localStorage.getItem(`teamforge_${table}`);
+                    if (existing) {
+                        tables[table] = JSON.parse(existing);
+                    }
+                });
+                
+                addLog('📊 Database tables loaded');
+                
+                // Generate ID function
+                function generateId() {
+                    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+                }
+                
+                // Create test user
+                const testUser = {
+                    id: generateId(),
+                    email: 'testcoach@teamforge.com',
+                    password: 'password123',
+                    firstName: 'Test',
+                    lastName: 'Coach',
+                    role: 'coach',
+                    created_at: new Date().toISOString(),
+                    is_active: true
+                };
+                
+                // Add user if not exists
+                if (!tables.users.find(u => u.email === testUser.email)) {
+                    tables.users.push(testUser);
+                    addLog('👤 Created test user: ' + testUser.email, 'success');
+                }
+                
+                // Set as current user
+                localStorage.setItem('teamforge_current_user', JSON.stringify(testUser));
+                addLog('🔑 Set current user session', 'success');
+                
+                // Create Team 1: U18 Balwyn 1
+                const team1 = {
+                    id: generateId(),
+                    name: 'U18 Balwyn 1',
+                    league: 'EDJBA AR',
+                    coach_id: testUser.id,
+                    created_by: testUser.id,
+                    created_at: new Date().toISOString(),
+                    is_active: true,
+                    color: '#3182ce'
+                };
+                
+                // Create Team 2: The Fellas
+                const team2 = {
+                    id: generateId(),
+                    name: 'The Fellas',
+                    league: 'EDJBA AR',
+                    coach_id: testUser.id,
+                    created_by: testUser.id,
+                    created_at: new Date().toISOString(),
+                    is_active: true,
+                    color: '#22c55e'
+                };
+                
+                // Add teams if they don't exist
+                if (!tables.teams.find(t => t.name === team1.name)) {
+                    tables.teams.push(team1);
+                    addLog('🏀 Created team: ' + team1.name, 'success');
+                }
+                
+                if (!tables.teams.find(t => t.name === team2.name)) {
+                    tables.teams.push(team2);
+                    addLog('🏀 Created team: ' + team2.name, 'success');
+                }
+                
+                // Create players for each team
+                const team1Players = [
+                    { firstName: 'John', lastName: 'Smith', jerseyNumber: '1' },
+                    { firstName: 'Mike', lastName: 'Johnson', jerseyNumber: '2' },
+                    { firstName: 'Chris', lastName: 'Wilson', jerseyNumber: '3' },
+                    { firstName: 'David', lastName: 'Brown', jerseyNumber: '4' },
+                    { firstName: 'Alex', lastName: 'Davis', jerseyNumber: '5' }
+                ];
+                
+                const team2Players = [
+                    { firstName: 'Jake', lastName: 'Miller', jerseyNumber: '1' },
+                    { firstName: 'Ryan', lastName: 'Taylor', jerseyNumber: '2' },
+                    { firstName: 'Luke', lastName: 'Anderson', jerseyNumber: '3' },
+                    { firstName: 'Matt', lastName: 'White', jerseyNumber: '4' },
+                    { firstName: 'Sam', lastName: 'Clark', jerseyNumber: '5' }
+                ];
+                
+                // Function to create players for a team
+                function createPlayersForTeam(teamId, teamName, playerData) {
+                    playerData.forEach((player, index) => {
+                        const playerId = generateId();
+                        const userId = generateId();
+                        
+                        // Create user for player
+                        const playerUser = {
+                            id: userId,
+                            email: `${player.firstName.toLowerCase()}.${player.lastName.toLowerCase()}@test.com`,
+                            password: 'password123',
+                            firstName: player.firstName,
+                            lastName: player.lastName,
+                            role: 'player',
+                            created_at: new Date().toISOString(),
+                            is_active: true
+                        };
+                        
+                        if (!tables.users.find(u => u.email === playerUser.email)) {
+                            tables.users.push(playerUser);
+                        }
+                        
+                        // Create player profile
+                        const playerProfile = {
+                            id: playerId,
+                            user_id: userId,
+                            firstName: player.firstName,
+                            lastName: player.lastName,
+                            jersey_number: player.jerseyNumber,
+                            position: 'Guard',
+                            height: "6'1\"",
+                            weight: '175 lbs',
+                            date_of_birth: '2005-01-01',
+                            emergency_contact: 'Parent',
+                            emergency_phone: '555-0100',
+                            created_at: new Date().toISOString(),
+                            is_active: true
+                        };
+                        
+                        if (!tables.player_profiles.find(p => p.user_id === userId)) {
+                            tables.player_profiles.push(playerProfile);
+                        }
+                        
+                        // Create team membership
+                        const membership = {
+                            id: generateId(),
+                            user_id: userId,
+                            team_id: teamId,
+                            role: 'player',
+                            joined_at: new Date().toISOString(),
+                            is_active: true
+                        };
+                        
+                        if (!tables.team_memberships.find(m => m.user_id === userId && m.team_id === teamId)) {
+                            tables.team_memberships.push(membership);
+                        }
+                    });
+                    
+                    addLog(`👥 Created ${playerData.length} players for ${teamName}`, 'success');
+                }
+                
+                createPlayersForTeam(team1.id, team1.name, team1Players);
+                createPlayersForTeam(team2.id, team2.name, team2Players);
+                
+                // Create the game with proper opponent_team_id
+                const testGame = {
+                    id: generateId(),
+                    team_id: team1.id,
+                    opponent_team_id: team2.id, // This is the key fix!
+                    title: `${team1.name} vs ${team2.name}`,
+                    description: 'Test basketball game with proper opponent team setup',
+                    event_date: new Date().toISOString(),
+                    event_type: 'game',
+                    location: 'Test Gymnasium',
+                    created_by: testUser.id,
+                    created_at: new Date().toISOString(),
+                    is_active: true
+                };
+                
+                // Remove any existing test games to avoid duplicates
+                tables.events = tables.events.filter(e => !e.title.includes('vs') || e.event_type !== 'game');
+                tables.events.push(testGame);
+                
+                addLog('🏆 Created game: ' + testGame.title, 'success');
+                addLog('🎯 Game has opponent_team_id: ' + testGame.opponent_team_id, 'success');
+                
+                // Save all data to localStorage
+                Object.keys(tables).forEach(table => {
+                    localStorage.setItem(`teamforge_${table}`, JSON.stringify(tables[table]));
+                });
+                
+                addLog('💾 Saved all data to database', 'success');
+                
+                // Show summary
+                addLog('', '');
+                addLog('✅ TEST DATA CREATION COMPLETE!', 'success');
+                addLog('', '');
+                addLog('📋 Summary:', 'warning');
+                addLog(`• User: ${testUser.firstName} ${testUser.lastName} (${testUser.email})`);
+                addLog(`• Team 1: ${team1.name} (${team1Players.length} players)`);
+                addLog(`• Team 2: ${team2.name} (${team2Players.length} players)`);
+                addLog(`• Game: ${testGame.title}`);
+                addLog(`• Game ID: ${testGame.id}`);
+                addLog('', '');
+                addLog('🚀 Next Steps:', 'warning');
+                addLog('1. Go to Calendar page');
+                addLog('2. Find the game and click the 📊 stats button');
+                addLog('3. Both teams should now appear with their players!');
+                
+                // Add direct link
+                output.innerHTML += `
+                    <div class="section">
+                        <h3>🚀 Quick Actions</h3>
+                        <a href="calendar.html" class="button">Go to Calendar</a>
+                        <a href="stats-entry.html?gameId=${testGame.id}" class="button success">Open Stats Entry</a>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Error creating test data:', error);
+                document.getElementById('output').innerHTML = `
+                    <div class="section">
+                        <h3 class="error">❌ Error Creating Test Data</h3>
+                        <p class="error">${error.message}</p>
+                        <pre>${error.stack}</pre>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

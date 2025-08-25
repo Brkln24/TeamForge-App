@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Database Check</title>
+</head>
+<body>
+    <h2>LocalStorage Database Inspection</h2>
+    <div id="output"></div>
+    
+    <script>
+        // Check all localStorage keys
+        const output = document.getElementById('output');
+        let html = '<h3>All localStorage keys:</h3>';
+        
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            const value = localStorage.getItem(key);
+            
+            html += `<strong>${key}:</strong><br>`;
+            
+            if (key.includes('users')) {
+                try {
+                    const parsed = JSON.parse(value);
+                    html += '<pre>' + JSON.stringify(parsed, null, 2) + '</pre>';
+                } catch (e) {
+                    html += value + '<br>';
+                }
+            } else {
+                html += value.substring(0, 200) + (value.length > 200 ? '...' : '') + '<br>';
+            }
+            html += '<br><hr><br>';
+        }
+        
+        output.innerHTML = html;
+    </script>
+</body>
+</html>

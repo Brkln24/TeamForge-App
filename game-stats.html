@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Stats - TeamForge</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        /* COMPLETE RESET - SIMPLE APPROACH */
+        * {
+            box-sizing: border-box;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #app {
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: #0f1419 !important;
+            height: 60px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+        
+        .navbar {
+            background-color: #0f1419 !important;
+        }
+
+        .main-content {
+            margin-top: 60px;
+            height: calc(100vh - 60px);
+            overflow: hidden;
+            padding: 1rem;
+        }
+
+        /* Game specific styles */
+        .game-header {
+            height: 60px;
+            margin-bottom: 1rem;
+        }
+
+        .game-actions {
+            height: 50px;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-primary);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .action-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .stats-interface {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 1rem;
+            height: calc(100vh - 220px); /* Simple fixed calculation */
+        }
+
+        .team-roster {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid var(--border-primary);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .team-roster h3 {
+            text-align: center;
+            margin: 0 0 1rem 0;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            font-weight: 600;
+            height: 30px;
+            flex-shrink: 0;
+        }
+
+        .player-list {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .nav-arrows {
+            height: 40px;
+            margin-top: 1rem;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        /* Entry Log Modal */
+        .entry-log-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .entry-log-content {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .entry-log-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .entry-log-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .close-log-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-log-btn:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .entry-log-body {
+            padding: 1rem;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .entry-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .entry-info {
+            flex: 1;
+        }
+
+        .entry-player {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .entry-stat {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .entry-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .delete-entry-btn {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+
+        .delete-entry-btn:hover {
+            background: #c53030;
+        }
+
+        .no-entries {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem;
+            font-style: italic;
+        }
+
+    </style>
+
+    <!-- Modern Firebase v12+ Modular SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+        import { getFirestore, connectFirestoreEmulator } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+        import { getAuth, connectAuthEmulator } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+        // Your TeamForge Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCrAPyjI91mdpOXgrUO6vKP83TbhMfQGKI",
+            authDomain: "teamforgeproject-37f27.firebaseapp.com",
+            projectId: "teamforgeproject-37f27",
+            storageBucket: "teamforgeproject-37f27.firebasestorage.app",
+            messagingSenderId: "625240400602",
+            appId: "1:625240400602:web:c24e30c9ba4f28b0bafbe3",
+            measurementId: "G-V2GBMH5H88"
+        };
+
+        try {
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+            
+            // Make Firebase available globally for testing
+            window.firebaseApp = app;
+            window.firebaseDB = db;
+            window.firebaseAuth = auth;
+            window.firebaseConfig = firebaseConfig;
+            
+            console.log('🔥 Firebase v12+ initialized successfully');
+            console.log('📊 Project ID:', firebaseConfig.projectId);
+            
+            // Mark Firebase as loaded
+            window.firebaseLoaded = true;
+            
+        } catch (error) {
+            console.error('❌ Firebase initialization failed:', error);
+            window.firebaseError = error;
+        }
+    </script>
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <nav class="navbar">
+                <!-- Navigation will be populated by JavaScript -->
+            </nav>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div id="game-stats-content">
+                    <!-- Game stats content will be populated by JavaScript -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/database.js?v=13"></script>
+    <script src="js/auth.js?v=13"></script>
+    <script src="js/navigation.js?v=13"></script>
+    <script src="js/game-stats.js?v=13"></script>
+</body>
+</html>

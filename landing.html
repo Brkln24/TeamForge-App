@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeamForge - Basketball Team Management</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        /* Landing Page Specific Styles */
+        .landing-body {
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-tertiary) 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .landing-header {
+            background: rgba(15, 20, 25, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-primary);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .landing-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .landing-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .landing-logo-icon {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .landing-nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .landing-nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .landing-nav-link:hover {
+            color: var(--text-primary);
+        }
+
+        .landing-nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            transition: width 0.3s ease;
+        }
+
+        .landing-nav-link:hover::after {
+            width: 100%;
+        }
+
+        .landing-cta-buttons {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn-primary-landing {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(49, 130, 206, 0.3);
+        }
+
+        .btn-primary-landing:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(49, 130, 206, 0.4);
+        }
+
+        .btn-secondary-landing {
+            background: transparent;
+            color: var(--text-primary);
+            padding: 0.75rem 1.5rem;
+            border: 2px solid var(--border-primary);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary-landing:hover {
+            border-color: var(--primary-color);
+            background: rgba(49, 130, 206, 0.1);
+        }
+
+        .landing-hero {
+            padding: 120px 2rem 80px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(49, 130, 206, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(44, 90, 160, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 80%, rgba(49, 130, 206, 0.05) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .hero-title-highlight {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            line-height: 1.6;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-hero-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(49, 130, 206, 0.3);
+        }
+
+        .btn-hero-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(49, 130, 206, 0.4);
+        }
+
+        .btn-hero-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            padding: 1rem 2rem;
+            border: 2px solid var(--border-primary);
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-hero-secondary:hover {
+            border-color: var(--primary-color);
+            background: rgba(49, 130, 206, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .features-section {
+            padding: 80px 2rem;
+            background: var(--bg-secondary);
+        }
+
+        .features-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .features-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .features-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .features-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-primary);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary-color);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-content > * {
+            direction: ltr;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 2rem 2rem 1rem;
+            border-bottom: 1px solid var(--border-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-screenshot {
+            width: 100%;
+            max-width: 100%;
+            border-radius: 12px;
+            border: 2px solid var(--border-primary);
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .modal-features-list {
+            list-style: none;
+            padding: 0;
+            margin: 1.5rem 0;
+        }
+
+        .modal-features-list li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .modal-features-list li::before {
+            content: '✓';
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .modal-cta {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .modal-cta-text {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        /* Mobile Modal Responsiveness */
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                margin: 1rem;
+                max-height: 95vh;
+            }
+
+            .modal-header,
+            .modal-body {
+                padding: 1.5rem;
+            }
+
+            .modal-title {
+                font-size: 1.25rem;
+            }
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .feature-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .stats-section {
+            padding: 80px 2rem;
+            background: var(--bg-primary);
+        }
+
+        .stats-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .stat-item {
+            padding: 1.5rem;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .cta-section {
+            padding: 80px 2rem;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            text-align: center;
+        }
+
+        .cta-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cta-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .cta-description {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+        }
+
+        .footer {
+            background: var(--bg-tertiary);
+            padding: 2rem;
+            text-align: center;
+            border-top: 1px solid var(--border-primary);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            color: var(--text-secondary);
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .landing-nav {
+                padding: 1rem;
+            }
+
+            .landing-nav-links {
+                display: none;
+            }
+
+            .landing-cta-buttons {
+                gap: 0.5rem;
+            }
+
+            .btn-primary-landing,
+            .btn-secondary-landing {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .landing-hero {
+                padding: 100px 1rem 60px;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .hero-cta {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .btn-hero-primary,
+            .btn-hero-secondary {
+                width: 100%;
+                max-width: 280px;
+            }
+
+            .features-section,
+            .stats-section,
+            .cta-section {
+                padding: 60px 1rem;
+            }
+
+            .features-title,
+            .cta-title {
+                font-size: 2rem;
+            }
+
+            .stats-grid {
+                gap: 2rem;
+            }
+        }
+    </style>
+
+    <!-- Modern Firebase v12+ Modular SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+        import { getFirestore, connectFirestoreEmulator } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+        import { getAuth, connectAuthEmulator } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+        // Your TeamForge Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCrAPyjI91mdpOXgrUO6vKP83TbhMfQGKI",
+            authDomain: "teamforgeproject-37f27.firebaseapp.com",
+            projectId: "teamforgeproject-37f27",
+            storageBucket: "teamforgeproject-37f27.firebasestorage.app",
+            messagingSenderId: "625240400602",
+            appId: "1:625240400602:web:c24e30c9ba4f28b0bafbe3",
+            measurementId: "G-V2GBMH5H88"
+        };
+
+        try {
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+            
+            // Make Firebase available globally for testing
+            window.firebaseApp = app;
+            window.firebaseDB = db;
+            window.firebaseAuth = auth;
+            window.firebaseConfig = firebaseConfig;
+            
+            console.log('🔥 Firebase v12+ initialized successfully');
+            console.log('📊 Project ID:', firebaseConfig.projectId);
+            
+            // Mark Firebase as loaded
+            window.firebaseLoaded = true;
+            
+        } catch (error) {
+            console.error('❌ Firebase initialization failed:', error);
+            window.firebaseError = error;
+        }
+    </script>
+</head>
+<body class="landing-body">
+    <!-- Header -->
+    <header class="landing-header">
+        <nav class="landing-nav">
+            <a href="#" class="landing-logo">
+                <span class="landing-logo-icon"><i class="bi bi-basketball"></i></span>
+                <span>TeamForge</span>
+            </a>
+            
+            <div class="landing-nav-links">
+                <a href="#features" class="landing-nav-link">Features</a>
+                <a href="#about" class="landing-nav-link">About</a>
+                <a href="#contact" class="landing-nav-link">Contact</a>
+            </div>
+
+            <div class="landing-cta-buttons">
+                <a href="login.html" class="btn-secondary-landing">Sign In</a>
+                <a href="register.html" class="btn-primary-landing">Get Started</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="landing-hero">
+        <div class="hero-background"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">
+                Elevate Your <span class="hero-title-highlight">Basketball Team</span> Management
+            </h1>
+            <p class="hero-subtitle">
+                The complete solution for coaches, players, and team managers. Track statistics, manage rosters, schedule games, and foster team communication all in one powerful platform.
+            </p>
+            <div class="hero-cta">
+                <a href="register.html" class="btn-hero-primary">Start Your Journey</a>
+                <a href="#features" class="btn-hero-secondary">Explore Features</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="features-container">
+            <div class="features-header">
+                <h2 class="features-title">Everything You Need</h2>
+                <p class="features-subtitle">
+                    Comprehensive tools designed specifically for basketball teams to excel on and off the court.
+                </p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card" onclick="openFeatureModal('stats')">
+                    <div class="feature-icon"><i class="bi bi-bar-chart-fill"></i></div>
+                    <h3 class="feature-title">Advanced Statistics</h3>
+                    <p class="feature-description">
+                        Track detailed player and team statistics with comprehensive analytics. Monitor performance trends and identify areas for improvement.
+                    </p>
+                </div>
+
+                <div class="feature-card" onclick="openFeatureModal('roster')">
+                    <div class="feature-icon"><i class="bi bi-people-fill"></i></div>
+                    <h3 class="feature-title">Team Management</h3>
+                    <p class="feature-description">
+                        Manage your roster, assign jersey numbers, track player profiles, and organize your team with intuitive tools.
+                    </p>
+                </div>
+
+                <div class="feature-card" onclick="openFeatureModal('calendar')">
+                    <div class="feature-icon"><i class="bi bi-calendar3"></i></div>
+                    <h3 class="feature-title">Game Scheduling</h3>
+                    <p class="feature-description">
+                        Schedule games and practices, track player availability, and keep everyone informed with our calendar system.
+                    </p>
+                </div>
+
+                <div class="feature-card" onclick="openFeatureModal('notes')">
+                    <div class="feature-icon"><i class="bi bi-chat-dots-fill"></i></div>
+                    <h3 class="feature-title">Team Communication</h3>
+                    <p class="feature-description">
+                        Keep your team connected with built-in messaging, notes, and announcements. Foster team chemistry and coordination.
+                    </p>
+                </div>
+
+                <div class="feature-card" onclick="openFeatureModal('manager')">
+                    <div class="feature-icon"><i class="bi bi-trophy-fill"></i></div>
+                    <h3 class="feature-title">Manager Dashboard</h3>
+                    <p class="feature-description">
+                        Comprehensive management tools for coaches and managers. Access lineup creators, team analytics, and administrative features.
+                    </p>
+                </div>
+
+                <div class="feature-card" onclick="openFeatureModal('profile')">
+                    <div class="feature-icon"><i class="bi bi-person-badge-fill"></i></div>
+                    <h3 class="feature-title">Player Profiles</h3>
+                    <p class="feature-description">
+                        Detailed player profiles with biometric data, performance history, and personal information management.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="stats-container">
+            <h2 class="features-title">Trusted by Basketball Teams</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label">Teams Using TeamForge</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">10K+</div>
+                    <div class="stat-label">Players Managed</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">50K+</div>
+                    <div class="stat-label">Games Tracked</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">99%</div>
+                    <div class="stat-label">Team Satisfaction</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-container">
+            <h2 class="cta-title">Ready to Transform Your Team?</h2>
+            <p class="cta-description">
+                Join thousands of basketball teams already using TeamForge to elevate their game. Get started today and experience the difference.
+            </p>
+            <div class="hero-cta">
+                <a href="register.html" class="btn-hero-primary">Create Your Team</a>
+                <a href="login.html" class="btn-hero-secondary">Sign In</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 TeamForge. All rights reserved. Built for basketball teams who demand excellence.</p>
+        </div>
+    </footer>
+
+    <!-- Feature Modal -->
+    <div id="featureModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle" class="modal-title"></h3>
+                <button class="modal-close" onclick="closeFeatureModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <img id="modalScreenshot" class="modal-screenshot" src="" alt="Feature Screenshot">
+                <div id="modalDescription" class="modal-description"></div>
+                <ul id="modalFeatures" class="modal-features-list"></ul>
+                <div class="modal-cta">
+                    <p class="modal-cta-text">Ready to experience this feature?</p>
+                    <a href="register.html" class="btn-hero-primary">Get Started Today</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Feature modal data - Only includes actually implemented features
+        const featureData = {
+            stats: {
+                title: '<i class="bi bi-bar-chart-fill"></i> Advanced Statistics',
+                screenshot: 'Screenshots/StatsPage.png',
+                description: 'View comprehensive player and team statistics with our analytics system. Track performance across games, compare players, and monitor team progress with detailed statistical breakdowns.',
+                features: [
+                    'Player averages (PPG, RPG, APG, SPG, BPG)',
+                    'Team filtering and league view',
+                    'Season vs totals view toggle',
+                    'Field goal percentage tracking',
+                    'Statistical leaders board',
+                    'Team statistics sidebar',
+                    'Games played tracking',
+                    'Real-time stat calculations'
+                ]
+            },
+            roster: {
+                title: '<i class="bi bi-people-fill"></i> Team Management',
+                screenshot: 'Screenshots/RosterPage.png',
+                description: 'Manage your team roster with player profiles and team organization tools. View player information, switch between teams, and keep track of your squad with our intuitive roster system.',
+                features: [
+                    'Player roster display with photos',
+                    'Team switching dropdown',
+                    'Player count and roster size',
+                    'Scrollable player list',
+                    'Player profile integration',
+                    'Team-based player filtering',
+                    'Clean, organized layout',
+                    'Role-based access control'
+                ]
+            },
+            calendar: {
+                title: '<i class="bi bi-calendar3"></i> Game Scheduling',
+                screenshot: 'Screenshots/Calendar.png',
+                description: 'Keep track of games and events with our calendar system. Schedule games, track outcomes, and stay organized with date-based event management for your team.',
+                features: [
+                    'Monthly calendar view',
+                    'Game event creation',
+                    'Date-based event display',
+                    'Event status tracking',
+                    'Game outcome recording',
+                    'Team event filtering',
+                    'Clean calendar interface',
+                    'Multi-team coach support'
+                ]
+            },
+            notes: {
+                title: '<i class="bi bi-chat-dots-fill"></i> Team Communication',
+                screenshot: 'Screenshots/NotesPage.png',
+                description: 'Communicate with your team through our messaging system. Send and receive messages, maintain conversation history, and keep team communication organized and accessible.',
+                features: [
+                    'Direct messaging between users',
+                    'Team member sidebar',
+                    'Message history display',
+                    'Real-time message sending',
+                    'User selection interface',
+                    'Chat-style conversation view',
+                    'Clean messaging layout',
+                    'Role-based messaging access'
+                ]
+            },
+            manager: {
+                title: '<i class="bi bi-trophy-fill"></i> Manager Dashboard',
+                screenshot: 'Screenshots/ManagerDashboard.png',
+                description: 'Access advanced management tools designed for coaches and team managers. Use intelligent lineup suggestions, manage multiple teams, and access comprehensive team oversight capabilities.',
+                features: [
+                    'Team selection and switching',
+                    'Intelligent lineup suggestions (balanced, offensive, defensive)',
+                    'Statistics-based player recommendations',
+                    'Lineup creator with drag-and-drop',
+                    'Team management dashboard',
+                    'Recent messages preview',
+                    'Team statistics overview',
+                    'Multi-team management support'
+                ]
+            },
+            profile: {
+                title: '<i class="bi bi-person-badge-fill"></i> Player Profiles',
+                screenshot: 'Screenshots/ProfilePage.png',
+                description: 'View and manage detailed player profiles with personal information and performance data. Access profile settings, view recent messages, and track individual player information.',
+                features: [
+                    'Personal information display',
+                    'Profile avatar and details',
+                    'Recent messages section',
+                    'User profile management',
+                    'Team affiliation display',
+                    'Role and position information',
+                    'Clean profile layout',
+                    'Individual user data tracking'
+                ]
+            }
+        };
+
+        // Open feature modal
+        function openFeatureModal(featureKey) {
+            const feature = featureData[featureKey];
+            if (!feature) return;
+
+            const modal = document.getElementById('featureModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalScreenshot = document.getElementById('modalScreenshot');
+            const modalDescription = document.getElementById('modalDescription');
+            const modalFeatures = document.getElementById('modalFeatures');
+
+            // Set modal content
+            modalTitle.innerHTML = feature.title;
+            modalScreenshot.src = feature.screenshot;
+            modalScreenshot.alt = `${feature.title} Screenshot`;
+            modalDescription.textContent = feature.description;
+
+            // Populate features list
+            modalFeatures.innerHTML = feature.features
+                .map(feature => `<li>${feature}</li>`)
+                .join('');
+
+            // Show modal
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close feature modal
+        function closeFeatureModal() {
+            const modal = document.getElementById('featureModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('featureModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeFeatureModal();
+            }
+        });
+
+        // Close modal with escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeFeatureModal();
+            }
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Header background on scroll
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('.landing-header');
+            if (window.scrollY > 100) {
+                header.style.background = 'rgba(15, 20, 25, 0.98)';
+                header.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.3)';
+            } else {
+                header.style.background = 'rgba(15, 20, 25, 0.95)';
+                header.style.boxShadow = 'none';
+            }
+        });
+
+        // Animate stats numbers on scroll
+        function animateStats() {
+            const stats = document.querySelectorAll('.stat-number');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const target = entry.target;
+                        const finalValue = target.textContent;
+                        let currentValue = 0;
+                        const increment = finalValue.includes('+') ? 
+                            parseInt(finalValue.replace(/[^0-9]/g, '')) / 100 : 
+                            parseInt(finalValue.replace(/[^0-9]/g, '')) / 100;
+                        
+                        const timer = setInterval(() => {
+                            currentValue += increment;
+                            if (currentValue >= parseInt(finalValue.replace(/[^0-9]/g, ''))) {
+                                target.textContent = finalValue;
+                                clearInterval(timer);
+                            } else {
+                                target.textContent = Math.floor(currentValue) + (finalValue.includes('+') ? '+' : finalValue.includes('%') ? '%' : '');
+                            }
+                        }, 20);
+                        
+                        observer.unobserve(target);
+                    }
+                });
+            });
+
+            stats.forEach(stat => observer.observe(stat));
+        }
+
+        // Initialize animations
+        document.addEventListener('DOMContentLoaded', animateStats);
+    </script>
+</body>
+</html>

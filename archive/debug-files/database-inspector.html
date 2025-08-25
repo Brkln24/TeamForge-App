@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Inspector - TeamForge</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .table-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        .table-section h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+        pre {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 3px;
+            overflow-x: auto;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .empty-table {
+            color: #666;
+            font-style: italic;
+            padding: 20px;
+            text-align: center;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-right: 10px;
+            border: none;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .summary {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TeamForge Database Inspector</h1>
+        
+        <div class="navigation">
+            <a href="register.html" class="btn">Registration</a>
+            <a href="roster.html" class="btn">Roster</a>
+            <a href="reset-database.html" class="btn">Reset Database</a>
+            <button onclick="refreshData()" class="btn">Refresh Data</button>
+        </div>
+
+        <div id="summary" class="summary">
+            <h3>Database Summary</h3>
+            <p id="summaryText">Loading...</p>
+        </div>
+
+        <div id="databaseContent">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        function inspectDatabase() {
+            const databaseContent = document.getElementById('databaseContent');
+            const summaryText = document.getElementById('summaryText');
+            
+            // Use the correct storage prefix that matches database.js
+            const storagePrefix = 'teamforge_';
+            
+            // List of all possible tables
+            const tables = [
+                'users',
+                'teams', 
+                'player_profiles',
+                'team_memberships',
+                'game_stats',
+                'season_stats',
+                'notes',
+                'registration_keys'
+            ];
+            
+            let html = '';
+            let summary = {};
+            
+            tables.forEach(tableName => {
+                const data = JSON.parse(localStorage.getItem(storagePrefix + tableName)) || [];
+                summary[tableName] = data.length;
+                
+                html += `<div class="table-section">
+                    <h3>${tableName.toUpperCase()} (${data.length} records)</h3>
+                    <small>Storage key: ${storagePrefix + tableName}</small>`;
+                
+                if (data.length === 0) {
+                    html += '<div class="empty-table">No records found</div>';
+                } else {
+                    html += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+                
+                html += '</div>';
+            });
+            
+            // Create summary text
+            const summaryLines = [
+                `Users: ${summary.users} records`,
+                `Teams: ${summary.teams} records`,
+                `Player Profiles: ${summary.player_profiles} records`,
+                `Team Memberships: ${summary.team_memberships} records`,
+                `Game Stats: ${summary.game_stats} records`,
+                `Season Stats: ${summary.season_stats} records`,
+                `Notes: ${summary.notes} records`,
+                `Registration Keys: ${summary.registration_keys} records`
+            ];
+            
+            summaryText.innerHTML = summaryLines.join('<br>');
+            databaseContent.innerHTML = html;
+            
+            // Special focus on player_profiles
+            if (summary.player_profiles === 0) {
+                databaseContent.innerHTML = `
+                    <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                        <strong>⚠️ ISSUE FOUND:</strong> No player profiles exist! This explains why biometric data isn't showing in the roster.
+                        <br><br>
+                        The registration process is not saving player profiles to the <code>player_profiles</code> table.
+                    </div>
+                    ${html}
+                `;
+            }
+        }
+        
+        function refreshData() {
+            inspectDatabase();
+        }
+        
+        // Run inspection on page load
+        inspectDatabase();
+        
+        // Auto-refresh every 5 seconds
+        setInterval(inspectDatabase, 5000);
+    </script>
+</body>
+</html>

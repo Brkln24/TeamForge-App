@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Debug Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
+        .debug-container { background: white; padding: 20px; border-radius: 8px; max-width: 800px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>TeamForge Login Debug Tool</h1>
+        
+        <div class="test-section">
+            <h3>1. Check Stored Users</h3>
+            <button onclick="checkStoredUsers()">View All Users</button>
+            <div id="usersResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Test Password Hashing</h3>
+            <input type="text" id="testPassword" placeholder="Enter password to test" value="Aaron">
+            <button onclick="testPasswordHash()">Test Hash</button>
+            <div id="hashResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Test Login Function</h3>
+            <input type="text" id="testUsername" placeholder="Username/Email" value="aaron">
+            <input type="password" id="testLoginPassword" placeholder="Password" value="Aaron">
+            <button onclick="testLogin()">Test Login</button>
+            <div id="loginResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Search for Aaron's Account</h3>
+            <button onclick="searchAaron()">Find Aaron</button>
+            <div id="aaronResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. Test Parent Account Specifically</h3>
+            <button onclick="testParentLogin()">Test Parent Login with aaron@google.com</button>
+            <div id="parentResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>6. Debug Authentication Step by Step</h3>
+            <button onclick="debugAuthentication()">Debug aaron@google.com Login Process</button>
+            <div id="debugResult"></div>
+        </div>
+    </div>
+
+    <script src="js/database.js"></script>
+    <script>
+        // Initialize database
+        window.db = new DatabaseManager();
+
+        function checkStoredUsers() {
+            const users = window.db.getTable('users') || [];
+            const result = document.getElementById('usersResult');
+            
+            if (users.length === 0) {
+                result.innerHTML = '<div class="error">No users found in database</div>';
+                return;
+            }
+
+            let html = '<div class="success">Found ' + users.length + ' users:</div><pre>';
+            users.forEach(user => {
+                html += JSON.stringify({
+                    id: user.id,
+                    username: user.username,
+                    email: user.email,
+                    role: user.role,
+                    is_active: user.is_active,
+                    password_hash: user.password_hash
+                }, null, 2) + '\n\n';
+            });
+            html += '</pre>';
+            result.innerHTML = html;
+        }
+
+        function testPasswordHash() {
+            const password = document.getElementById('testPassword').value;
+            const result = document.getElementById('hashResult');
+            
+            if (!password) {
+                result.innerHTML = '<div class="error">Please enter a password</div>';
+                return;
+            }
+
+            const hash = window.db.hashPassword(password);
+            result.innerHTML = `
+                <div class="success">
+                    <strong>Password:</strong> ${password}<br>
+                    <strong>Hash:</strong> ${hash}<br>
+                    <strong>Your target hash:</strong> QWFyb250ZWFtZm9yZ2Vfc2FsdA==<br>
+                    <strong>Match:</strong> ${hash === 'QWFyb250ZWFtZm9yZ2Vfc2FsdA==' ? 'YES ✓' : 'NO ✗'}
+                </div>
+            `;
+        }
+
+        function testLogin() {
+            const username = document.getElementById('testUsername').value;
+            const password = document.getElementById('testLoginPassword').value;
+            const result = document.getElementById('loginResult');
+            
+            if (!username || !password) {
+                result.innerHTML = '<div class="error">Please enter both username and password</div>';
+                return;
+            }
+
+            window.db.authenticate(username, password).then(authResult => {
+                if (authResult.success) {
+                    result.innerHTML = `
+                        <div class="success">
+                            <strong>Login Successful!</strong><br>
+                            User: ${authResult.user.first_name} ${authResult.user.last_name}<br>
+                            Role: ${authResult.user.role}<br>
+                            Email: ${authResult.user.email}
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <div class="error">
+                            <strong>Login Failed:</strong> ${authResult.message}
+                        </div>
+                    `;
+                }
+            }).catch(error => {
+                result.innerHTML = `
+                    <div class="error">
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+            });
+        }
+
+        function searchAaron() {
+            const users = window.db.getTable('users') || [];
+            const result = document.getElementById('aaronResult');
+            
+            const aaronUsers = users.filter(user => 
+                user.username.toLowerCase().includes('aaron') ||
+                user.email.toLowerCase().includes('aaron') ||
+                user.first_name.toLowerCase().includes('aaron') ||
+                user.last_name.toLowerCase().includes('aaron') ||
+                user.password_hash === 'QWFyb250ZWFtZm9yZ2Vfc2FsdA=='
+            );
+
+            if (aaronUsers.length === 0) {
+                result.innerHTML = '<div class="error">No Aaron accounts found</div>';
+            } else {
+                let html = '<div class="success">Found Aaron accounts:</div><pre>';
+                aaronUsers.forEach(user => {
+                    html += JSON.stringify(user, null, 2) + '\n\n';
+                });
+                html += '</pre>';
+                result.innerHTML = html;
+            }
+        }
+
+        function testParentLogin() {
+            const result = document.getElementById('parentResult');
+            
+            // Test specifically with aaron@google.com as shown in the screenshot
+            window.db.authenticate('aaron@google.com', 'Aaron').then(authResult => {
+                if (authResult.success) {
+                    result.innerHTML = `
+                        <div class="success">
+                            <strong>Parent Login Successful!</strong><br>
+                            User: ${authResult.user.first_name} ${authResult.user.last_name}<br>
+                            Role: ${authResult.user.role}<br>
+                            Email: ${authResult.user.email}<br>
+                            Active: ${authResult.user.is_active}
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <div class="error">
+                            <strong>Parent Login Failed:</strong> ${authResult.message}<br>
+                            Now checking what's wrong...
+                        </div>
+                    `;
+                    // If login failed, let's debug why
+                    debugAuthentication();
+                }
+            }).catch(error => {
+                result.innerHTML = `
+                    <div class="error">
+                        <strong>Error during parent login:</strong> ${error.message}
+                    </div>
+                `;
+            });
+        }
+
+        function debugAuthentication() {
+            const result = document.getElementById('debugResult');
+            const username = 'aaron@google.com';
+            const password = 'Aaron';
+            
+            // Step 1: Check if user exists
+            const users = window.db.getTable('users') || [];
+            const userByEmail = users.find(u => u.email === username);
+            const userByUsername = users.find(u => u.username === username);
+            
+            let debugInfo = '<div class="success"><strong>Authentication Debug for aaron@google.com:</strong></div>';
+            
+            // Step 2: Check password hash
+            const expectedHash = window.db.hashPassword(password);
+            
+            debugInfo += '<pre>';
+            debugInfo += `Step 1 - User Lookup:\n`;
+            debugInfo += `  Looking for email: ${username}\n`;
+            debugInfo += `  Looking for username: ${username}\n`;
+            debugInfo += `  Found by email: ${userByEmail ? 'YES' : 'NO'}\n`;
+            debugInfo += `  Found by username: ${userByUsername ? 'YES' : 'NO'}\n\n`;
+            
+            const foundUser = userByEmail || userByUsername;
+            
+            if (foundUser) {
+                debugInfo += `Step 2 - User Details:\n`;
+                debugInfo += `  ID: ${foundUser.id}\n`;
+                debugInfo += `  Username: ${foundUser.username}\n`;
+                debugInfo += `  Email: ${foundUser.email}\n`;
+                debugInfo += `  Role: ${foundUser.role}\n`;
+                debugInfo += `  Active: ${foundUser.is_active}\n`;
+                debugInfo += `  Password Hash: ${foundUser.password_hash}\n\n`;
+                
+                debugInfo += `Step 3 - Password Check:\n`;
+                debugInfo += `  Input password: ${password}\n`;
+                debugInfo += `  Expected hash: ${expectedHash}\n`;
+                debugInfo += `  Stored hash: ${foundUser.password_hash}\n`;
+                debugInfo += `  Hash match: ${expectedHash === foundUser.password_hash ? 'YES' : 'NO'}\n\n`;
+                
+                debugInfo += `Step 4 - Authentication Logic:\n`;
+                debugInfo += `  Email match: ${foundUser.email === username ? 'YES' : 'NO'}\n`;
+                debugInfo += `  Username match: ${foundUser.username === username ? 'YES' : 'NO'}\n`;
+                debugInfo += `  Password match: ${expectedHash === foundUser.password_hash ? 'YES' : 'NO'}\n`;
+                debugInfo += `  Is active: ${foundUser.is_active ? 'YES' : 'NO'}\n`;
+                
+                const shouldAuthenticate = (foundUser.username === username || foundUser.email === username) && 
+                                         foundUser.password_hash === expectedHash && 
+                                         foundUser.is_active;
+                debugInfo += `  Should authenticate: ${shouldAuthenticate ? 'YES' : 'NO'}\n`;
+                
+                if (!shouldAuthenticate) {
+                    debugInfo += `\nPROBLEM IDENTIFIED:\n`;
+                    if (!foundUser.is_active) {
+                        debugInfo += `  - Account is not active!\n`;
+                    }
+                    if (foundUser.password_hash !== expectedHash) {
+                        debugInfo += `  - Password hash mismatch!\n`;
+                    }
+                    if (foundUser.username !== username && foundUser.email !== username) {
+                        debugInfo += `  - Username/email mismatch!\n`;
+                    }
+                }
+            } else {
+                debugInfo += `PROBLEM: No user found with email or username: ${username}\n`;
+                debugInfo += `\nAll users in database:\n`;
+                users.forEach((user, index) => {
+                    debugInfo += `  ${index + 1}. ${user.username} (${user.email}) - Role: ${user.role}\n`;
+                });
+            }
+            
+            debugInfo += '</pre>';
+            result.innerHTML = debugInfo;
+        }
+
+        // Auto-load users on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            checkStoredUsers();
+            testPasswordHash();
+        });
+    </script>
+</body>
+</html>

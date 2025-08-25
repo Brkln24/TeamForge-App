@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - TeamForge</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .register-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-primary);
+            padding: 2rem;
+        }
+
+        .register-container {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            max-width: 600px;
+            width: 100%;
+            border: 1px solid var(--border-primary);
+        }
+
+        .register-header {
+            padding: 2rem 2rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .header-brand {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .register-body {
+            padding: 2rem;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--border-primary);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin: 0 0.5rem;
+            position: relative;
+        }
+
+        .step.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .step.completed {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .step::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            width: 40px;
+            height: 2px;
+            background: var(--border-primary);
+            transform: translateY(-50%);
+        }
+
+        .step:last-child::after {
+            display: none;
+        }
+
+        .step.completed::after {
+            background: var(--success-color);
+        }
+
+        .form-step {
+            display: none;
+        }
+
+        .form-step.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-primary);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: var(--bg-secondary);
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .role-selection {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .role-card {
+            border: 2px solid var(--border-primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--bg-primary);
+        }
+
+        .role-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .role-card.selected {
+            border-color: var(--primary-color);
+            background: rgba(49, 130, 206, 0.1);
+        }
+
+        .role-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .role-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .role-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .btn-primary, .btn-secondary {
+            padding: 0.875rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            margin: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(49, 130, 206, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-primary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary-color);
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            border-left: 4px solid #dc2626;
+        }
+
+        .success-message {
+            background: #dcfce7;
+            color: #16a34a;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            border-left: 4px solid #16a34a;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .login-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .role-selection {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row, .form-row-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .register-container {
+                max-width: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+        .register-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .required {
+            color: #dc2626;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-primary);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: var(--bg-secondary);
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .form-select {
+            cursor: pointer;
+        }
+
+        .register-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .register-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(49, 130, 206, 0.3);
+        }
+
+        .register-btn:disabled {
+            background: var(--muted-color);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            border-left: 4px solid #dc2626;
+        }
+
+        .success-message {
+            background: #dcfce7;
+            color: #16a34a;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            border-left: 4px solid #16a34a;
+        }
+
+        .register-footer {
+            padding: 1rem 2rem 2rem;
+            text-align: center;
+            border-top: 1px solid var(--border-primary);
+        }
+
+        .login-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-link:hover {
+            text-decoration: underline;
+        }
+
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-right: 1rem;
+        }
+
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 768px) {
+            .register-page {
+                padding: 1rem;
+            }
+
+            .register-container {
+                max-width: 400px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .register-header {
+                padding: 1.5rem 1.5rem 1rem;
+            }
+
+            .register-body {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .register-body {
+                padding: 1rem;
+            }
+
+            .register-header {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-page">
+        <div class="register-container">
+            <div class="register-header">
+                <h1 class="header-brand">Create Account</h1>
+                <p class="header-subtitle">Join TeamForge and start managing your basketball team</p>
+            </div>
+
+            <div class="register-body">
+                <div id="messageContainer"></div>
+
+                <form id="registerForm" class="register-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName" class="form-label">First Name <span class="required">*</span></label>
+                            <input type="text" id="firstName" name="firstName" class="form-input" placeholder="Enter first name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName" class="form-label">Last Name <span class="required">*</span></label>
+                            <input type="text" id="lastName" name="lastName" class="form-input" placeholder="Enter last name" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="email" class="form-label">Email Address <span class="required">*</span></label>
+                        <input type="email" id="email" name="email" class="form-input" placeholder="Enter email address" required>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="username" class="form-label">Username <span class="required">*</span></label>
+                        <input type="text" id="username" name="username" class="form-input" placeholder="Choose a username" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="password" class="form-label">Password <span class="required">*</span></label>
+                            <input type="password" id="password" name="password" class="form-input" placeholder="Create password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword" class="form-label">Confirm Password <span class="required">*</span></label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" placeholder="Confirm password" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="role" class="form-label">Role <span class="required">*</span></label>
+                        <select id="role" name="role" class="form-select" required>
+                            <option value="">Select your role</option>
+                            <option value="player">Player</option>
+                            <option value="coach">Coach</option>
+                            <option value="manager">Team Manager</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="register-btn" id="registerBtn">
+                        Create Account
+                    </button>
+                </form>
+            </div>
+
+            <div class="register-footer">
+                <a href="index.html" class="back-link">← Back to Home</a>
+                <span>Already have an account? <a href="login.html" class="login-link">Sign In</a></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class RegisterAuth {
+            constructor() {
+                this.initializeEventListeners();
+            }
+
+            initializeEventListeners() {
+                const form = document.getElementById('registerForm');
+                if (form) {
+                    form.addEventListener('submit', (e) => this.handleRegister(e));
+                }
+
+                // Real-time password confirmation validation
+                const confirmPassword = document.getElementById('confirmPassword');
+                if (confirmPassword) {
+                    confirmPassword.addEventListener('input', () => this.validatePasswordMatch());
+                }
+            }
+
+            validatePasswordMatch() {
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword');
+                const confirmValue = confirmPassword.value;
+
+                if (confirmValue && password !== confirmValue) {
+                    confirmPassword.style.borderColor = '#dc2626';
+                } else {
+                    confirmPassword.style.borderColor = '';
+                }
+            }
+
+            async handleRegister(event) {
+                event.preventDefault();
+                
+                const form = event.target;
+                const formData = new FormData(form);
+                const userData = Object.fromEntries(formData.entries());
+
+                // Validate passwords match
+                if (userData.password !== userData.confirmPassword) {
+                    this.showMessage('Passwords do not match', 'error');
+                    return;
+                }
+
+                // Validate password strength
+                if (userData.password.length < 6) {
+                    this.showMessage('Password must be at least 6 characters long', 'error');
+                    return;
+                }
+
+                this.setLoading(true);
+
+                try {
+                    const result = await window.db.register({
+                        username: userData.username,
+                        email: userData.email,
+                        password: userData.password,
+                        first_name: userData.firstName,
+                        last_name: userData.lastName,
+                        role: userData.role
+                    });
+
+                    if (result.success) {
+                        this.showMessage('Account created successfully! Redirecting to login...', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'login.html';
+                        }, 2000);
+                    } else {
+                        this.showMessage(result.message || 'Registration failed. Please try again.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Registration error:', error);
+                    this.showMessage('An error occurred during registration. Please try again.', 'error');
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+
+            showMessage(message, type) {
+                const container = document.getElementById('messageContainer');
+                container.innerHTML = `
+                    <div class="${type}-message">
+                        ${message}
+                    </div>
+                `;
+            }
+
+            setLoading(loading) {
+                const btn = document.getElementById('registerBtn');
+                if (loading) {
+                    btn.disabled = true;
+                    btn.textContent = 'Creating Account...';
+                } else {
+                    btn.disabled = false;
+                    btn.textContent = 'Create Account';
+                }
+            }
+        }
+
+        // Initialize when DOM loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new RegisterAuth();
+        });
+    </script>
+
+    <script src="js/database.js"></script>
+</body>
+</html>

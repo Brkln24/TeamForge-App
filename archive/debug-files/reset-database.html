@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Database - TeamForge</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .danger {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .data-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        pre {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Database Reset Utility</h1>
+        
+        <div class="danger">
+            <strong>⚠️ WARNING:</strong> This tool will permanently delete ALL user data including:
+            <ul>
+                <li>All user accounts</li>
+                <li>All teams</li>
+                <li>All player profiles</li>
+                <li>All team memberships</li>
+                <li>All game stats</li>
+                <li>All season stats</li>
+                <li>All notes</li>
+                <li>All registration keys</li>
+            </ul>
+            This action cannot be undone!
+        </div>
+
+        <div class="navigation">
+            <a href="register.html" class="btn btn-primary">Go to Registration</a>
+            <a href="dashboard.html" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+
+        <div id="currentData">
+            <h3>Current Database Contents</h3>
+            <button onclick="showCurrentData()" class="btn btn-secondary">Show Current Data</button>
+            <button onclick="refreshData()" class="btn btn-secondary">Refresh Data</button>
+        </div>
+
+        <div id="dataDisplay"></div>
+
+        <div style="margin-top: 30px;">
+            <h3>Reset Options</h3>
+            
+            <button onclick="resetAllData()" class="btn btn-danger">
+                🗑️ RESET ALL DATA
+            </button>
+            
+            <button onclick="resetUsersOnly()" class="btn btn-danger">
+                👥 Reset Users & Players Only (Keep Teams)
+            </button>
+            
+            <button onclick="resetStatsOnly()" class="btn btn-danger">
+                📊 Reset Stats Only
+            </button>
+            
+            <button onclick="resetStatsAndGames()" class="btn btn-danger">
+                🏀 Reset Stats & Games
+            </button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script src="js/database.js"></script>
+    <script>
+        function showCurrentData() {
+            const dataDisplay = document.getElementById('dataDisplay');
+            
+            // Check if database is loaded
+            if (!window.db) {
+                dataDisplay.innerHTML = '<div class="danger">Database not loaded. Please refresh the page.</div>';
+                return;
+            }
+            
+            // Use the correct storage prefix that matches database.js
+            const storagePrefix = 'teamforge_';
+            
+            const users = JSON.parse(localStorage.getItem(storagePrefix + 'users')) || [];
+            const teams = JSON.parse(localStorage.getItem(storagePrefix + 'teams')) || [];
+            const playerProfiles = JSON.parse(localStorage.getItem(storagePrefix + 'player_profiles')) || [];
+            const teamMemberships = JSON.parse(localStorage.getItem(storagePrefix + 'team_memberships')) || [];
+            const registrationKeys = JSON.parse(localStorage.getItem(storagePrefix + 'registration_keys')) || [];
+            
+            const html = `
+                <div class="data-section">
+                    <h4>Users (${users.length})</h4>
+                    <pre>${JSON.stringify(users, null, 2)}</pre>
+                </div>
+                
+                <div class="data-section">
+                    <h4>Teams (${teams.length})</h4>
+                    <pre>${JSON.stringify(teams, null, 2)}</pre>
+                </div>
+                
+                <div class="data-section">
+                    <h4>Player Profiles (${playerProfiles.length})</h4>
+                    <pre>${JSON.stringify(playerProfiles, null, 2)}</pre>
+                </div>
+                
+                <div class="data-section">
+                    <h4>Team Memberships (${teamMemberships.length})</h4>
+                    <pre>${JSON.stringify(teamMemberships, null, 2)}</pre>
+                </div>
+                
+                <div class="data-section">
+                    <h4>Registration Keys (${registrationKeys.length})</h4>
+                    <pre>${JSON.stringify(registrationKeys, null, 2)}</pre>
+                </div>
+            `;
+            
+            dataDisplay.innerHTML = html;
+        }
+        
+        function resetAllData() {
+            if (!confirm('Are you absolutely sure you want to delete ALL data? This cannot be undone!')) {
+                return;
+            }
+            
+            if (!confirm('Last chance! This will delete EVERYTHING. Continue?')) {
+                return;
+            }
+            
+            try {
+                // Use the correct storage prefix that matches database.js
+                const storagePrefix = 'teamforge_';
+                
+                // List all possible localStorage keys used by TeamForge
+                const tableNames = [
+                    'users',
+                    'teams', 
+                    'player_profiles',
+                    'team_memberships',
+                    'game_stats',
+                    'season_stats',
+                    'notes',
+                    'registration_keys',
+                    'current_user'
+                ];
+                
+                const keysToRemove = [];
+                
+                // Remove prefixed keys
+                tableNames.forEach(tableName => {
+                    const key = storagePrefix + tableName;
+                    localStorage.removeItem(key);
+                    keysToRemove.push(key);
+                    console.log(`Removed: ${key}`);
+                });
+                
+                // Remove non-prefixed debug keys
+                localStorage.removeItem('lastRegistrationDebug');
+                keysToRemove.push('lastRegistrationDebug');
+                
+                // Also remove any other TeamForge related keys
+                for (let i = localStorage.length - 1; i >= 0; i--) {
+                    const key = localStorage.key(i);
+                    if (key && (key.includes('teamforge') || key.includes('TeamForge'))) {
+                        localStorage.removeItem(key);
+                        console.log(`Removed additional key: ${key}`);
+                    }
+                }
+                
+                console.log('All data cleared successfully');
+                console.log('All data cleared successfully');
+                
+                document.getElementById('results').innerHTML = `
+                    <div class="success">
+                        <strong>✅ Success!</strong> All data has been cleared. 
+                        <br>You can now <a href="register.html">register new users</a>.
+                        <br><br>
+                        <strong>What was cleared:</strong>
+                        <ul>
+                            ${keysToRemove.map(key => `<li>${key}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                
+                // Clear the data display and refresh it
+                document.getElementById('dataDisplay').innerHTML = '';
+                setTimeout(showCurrentData, 500);
+                
+            } catch (error) {
+                console.error('Reset error:', error);
+                document.getElementById('results').innerHTML = `
+                    <div class="danger">
+                        <strong>❌ Error:</strong> ${error.message}
+                        <br>Check browser console for details.
+                    </div>
+                `;
+            }
+        }
+        
+        function resetUsersOnly() {
+            if (!confirm('This will delete all users, player profiles, and team memberships but keep teams. Continue?')) {
+                return;
+            }
+            
+            try {
+                // Use the correct storage prefix that matches database.js
+                const storagePrefix = 'teamforge_';
+                
+                // Clear user-related tables only
+                const tableNames = [
+                    'users',
+                    'player_profiles',
+                    'team_memberships',
+                    'game_stats',
+                    'season_stats',
+                    'notes',
+                    'current_user'
+                ];
+                
+                const keysToRemove = [];
+                
+                tableNames.forEach(tableName => {
+                    const key = storagePrefix + tableName;
+                    localStorage.removeItem(key);
+                    keysToRemove.push(key);
+                    console.log(`Removed: ${key}`);
+                });
+                
+                // Remove non-prefixed debug keys
+                localStorage.removeItem('lastRegistrationDebug');
+                keysToRemove.push('lastRegistrationDebug');
+
+                document.getElementById('results').innerHTML = `
+                    <div class="success">
+                        <strong>✅ Success!</strong> Users and player data cleared. Teams preserved.
+                        <br>You can now <a href="register.html">register new users</a>.
+                        <br><br>
+                        <strong>What was cleared:</strong>
+                        <ul>
+                            ${keysToRemove.map(key => `<li>${key}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                
+                // Clear the data display and refresh it
+                document.getElementById('dataDisplay').innerHTML = '';
+                setTimeout(showCurrentData, 500);
+                
+            } catch (error) {
+                console.error('Reset error:', error);
+                document.getElementById('results').innerHTML = `
+                    <div class="danger">
+                        <strong>❌ Error:</strong> ${error.message}
+                        <br>Check browser console for details.
+                    </div>
+                `;
+            }
+        }
+        
+        function resetStatsOnly() {
+            if (!confirm('This will delete all game stats and season stats. Continue?')) {
+                return;
+            }
+            
+            try {
+                const storagePrefix = 'teamforge_';
+                const tableNames = [
+                    'game_stats', 
+                    'season_stats',
+                    'team_stats',
+                    'team_game_stats',
+                    'team_season_stats'
+                ];
+                const keysToRemove = [];
+                
+                tableNames.forEach(tableName => {
+                    const key = storagePrefix + tableName;
+                    localStorage.removeItem(key);
+                    keysToRemove.push(key);
+                    console.log(`Removed: ${key}`);
+                });
+
+                document.getElementById('results').innerHTML = `
+                    <div class="success">
+                        <strong>✅ Success!</strong> All stats data cleared.
+                        <br><br>
+                        <strong>What was cleared:</strong>
+                        <ul>
+                            ${keysToRemove.map(key => `<li>${key}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                
+                setTimeout(showCurrentData, 500);
+                
+            } catch (error) {
+                console.error('Reset error:', error);
+                document.getElementById('results').innerHTML = `
+                    <div class="danger">
+                        <strong>❌ Error:</strong> ${error.message}
+                        <br>Check browser console for details.
+                    </div>
+                `;
+            }
+        }
+        
+        function resetStatsAndGames() {
+            if (!confirm('This will delete all game stats, season stats, team stats, calendar events, and availability data. Continue?')) {
+                return;
+            }
+            
+            try {
+                const storagePrefix = 'teamforge_';
+                const tableNames = [
+                    'game_stats',         // Individual game statistics
+                    'season_stats',       // Aggregated season statistics  
+                    'team_stats',         // Team statistics and totals (legacy)
+                    'team_game_stats',    // Team game statistics (old system)
+                    'team_season_stats',  // Team season statistics (new system)
+                    'events',             // Calendar events (games, practices)
+                    'availability'        // Player availability for events
+                ];
+                const keysToRemove = [];
+                
+                tableNames.forEach(tableName => {
+                    const key = storagePrefix + tableName;
+                    localStorage.removeItem(key);
+                    keysToRemove.push(key);
+                    console.log(`Removed: ${key}`);
+                });
+
+                document.getElementById('results').innerHTML = `
+                    <div class="success">
+                        <strong>✅ Success!</strong> All stats and games data cleared.
+                        <br><br>
+                        <strong>What was cleared:</strong>
+                        <ul>
+                            <li>Game Statistics (individual player game stats)</li>
+                            <li>Season Statistics (aggregated player season totals)</li>
+                            <li>Team Stats (legacy team statistics)</li>
+                            <li>Team Game Stats (old team game system)</li>
+                            <li>Team Season Stats (new team statistics system)</li>
+                            <li>Events (calendar games and practices)</li>
+                            <li>Availability (player availability for events)</li>
+                        </ul>
+                        
+                        <p><strong>Note:</strong> User accounts, teams, player profiles, and team memberships have been preserved.</p>
+                    </div>
+                `;
+                
+                // Clear the data display and refresh it
+                document.getElementById('dataDisplay').innerHTML = '';
+                setTimeout(showCurrentData, 500);
+                
+            } catch (error) {
+                console.error('Reset error:', error);
+                document.getElementById('results').innerHTML = `
+                    <div class="danger">
+                        <strong>❌ Error:</strong> ${error.message}
+                        <br>Check browser console for details.
+                    </div>
+                `;
+            }
+        }
+        
+        // Show current data on page load
+        window.addEventListener('load', function() {
+            console.log('Page loaded, showing current data...');
+            showCurrentData();
+        });
+        
+        // Also add a manual refresh button
+        function refreshData() {
+            showCurrentData();
+        }
+    </script>
+</body>
+</html>

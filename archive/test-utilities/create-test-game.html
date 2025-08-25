@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Test Game - TeamForge</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            color: #721c24;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Create Test Game Data</h1>
+        
+        <p>This page will create sample test data including a user, team, players, and a game for testing the stats entry system.</p>
+        
+        <button onclick="createTestData()" class="btn">Create Test Data</button>
+        <button onclick="viewData()" class="btn">View Current Data</button>
+        <a href="database-inspector.html" class="btn">Database Inspector</a>
+        
+        <div id="results"></div>
+        <div id="gameLink"></div>
+    </div>
+
+    <script src="js/database.js"></script>
+    <script>
+        let db = new DatabaseManager();
+        
+        function createTestData() {
+            const results = document.getElementById('results');
+            const gameLink = document.getElementById('gameLink');
+            
+            try {
+                // Create test user if none exists
+                let user = db.getCurrentUser();
+                if (!user) {
+                    const testUser = {
+                        username: 'testuser',
+                        email: 'test@example.com',
+                        password_hash: db.hashPassword('password123'),
+                        first_name: 'Test',
+                        last_name: 'User',
+                        phone: '555-0123',
+                        is_active: true,
+                        created_at: new Date().toISOString()
+                    };
+                    
+                    const users = db.getTable('users') || [];
+                    testUser.id = db.generateId();
+                    users.push(testUser);
+                    db.setTable('users', users);
+                    
+                    // Set as current user
+                    db.currentUser = testUser;
+                    localStorage.setItem('teamforge_current_user', JSON.stringify(testUser));
+                    
+                    user = testUser;
+                }
+                
+                // Create test teams if none exist
+                let homeTeam = null;
+                let awayTeam = null;
+                const teams = db.getTable('teams') || [];
+                
+                if (teams.length < 2) {
+                    // Create home team
+                    const testHomeTeam = {
+                        id: db.generateId(),
+                        name: 'U18 Balwyn 1',
+                        division: 'Senior',
+                        season: '2025',
+                        league: 'EDJBA AR', // Eastern Districts Junior Basketball Association - AR Division
+                        coach_name: user.first_name + ' ' + user.last_name,
+                        home_venue: 'Balwyn Gymnasium',
+                        created_by: user.id,
+                        created_at: new Date().toISOString(),
+                        is_active: true
+                    };
+                    
+                    // Create away team
+                    const testAwayTeam = {
+                        id: db.generateId(),
+                        name: 'The Fellas',
+                        division: 'Senior',
+                        season: '2025',
+                        league: 'EDJBA AR', // Same league so they can play each other
+                        coach_name: 'Away Coach',
+                        home_venue: 'Fellas Stadium',
+                        created_by: user.id,
+                        created_at: new Date().toISOString(),
+                        is_active: true
+                    };
+                    
+                    teams.push(testHomeTeam, testAwayTeam);
+                    db.setTable('teams', teams);
+                    
+                    // Add user as team member for home team
+                    const memberships = db.getTable('team_memberships') || [];
+                    memberships.push({
+                        id: db.generateId(),
+                        user_id: user.id,
+                        team_id: testHomeTeam.id,
+                        role: 'coach',
+                        joined_at: new Date().toISOString(),
+                        is_active: true
+                    });
+                    db.setTable('team_memberships', memberships);
+                    
+                    homeTeam = testHomeTeam;
+                    awayTeam = testAwayTeam;
+                } else {
+                    homeTeam = teams[0];
+                    awayTeam = teams[1] || teams[0]; // Use second team if available
+                }
+                
+                // Create test players if none exist
+                const playerProfiles = db.getTable('player_profiles') || [];
+                if (playerProfiles.length === 0) {
+                    // Home team players
+                    const homeTestPlayers = [
+                        { firstName: 'John', lastName: 'Smith', jerseyNumber: '23', position: 'PG' },
+                        { firstName: 'Mike', lastName: 'Johnson', jerseyNumber: '10', position: 'SG' },
+                        { firstName: 'Chris', lastName: 'Brown', jerseyNumber: '5', position: 'SF' },
+                        { firstName: 'David', lastName: 'Wilson', jerseyNumber: '32', position: 'PF' },
+                        { firstName: 'Steve', lastName: 'Davis', jerseyNumber: '15', position: 'C' }
+                    ];
+                    
+                    // Away team players
+                    const awayTestPlayers = [
+                        { firstName: 'Alex', lastName: 'Thompson', jerseyNumber: '24', position: 'PG' },
+                        { firstName: 'Ryan', lastName: 'Miller', jerseyNumber: '11', position: 'SG' },
+                        { firstName: 'Jake', lastName: 'Anderson', jerseyNumber: '8', position: 'SF' },
+                        { firstName: 'Marcus', lastName: 'Taylor', jerseyNumber: '33', position: 'PF' },
+                        { firstName: 'Tyler', lastName: 'Johnson', jerseyNumber: '21', position: 'C' }
+                    ];
+                    
+                    // Create home team players
+                    homeTestPlayers.forEach(playerData => {
+                        const playerId = db.generateId();
+                        const userId = db.generateId();
+                        
+                        // Create user record for player
+                        const users = db.getTable('users') || [];
+                        users.push({
+                            id: userId,
+                            username: playerData.firstName.toLowerCase() + playerData.lastName.toLowerCase(),
+                            email: `${playerData.firstName.toLowerCase()}.${playerData.lastName.toLowerCase()}@test.com`,
+                            password_hash: db.hashPassword('password123'),
+                            first_name: playerData.firstName,
+                            last_name: playerData.lastName,
+                            is_active: true,
+                            created_at: new Date().toISOString()
+                        });
+                        db.setTable('users', users);
+                        
+                        // Create player profile
+                        playerProfiles.push({
+                            id: playerId,
+                            user_id: userId,
+                            firstName: playerData.firstName,
+                            lastName: playerData.lastName,
+                            jersey_number: playerData.jerseyNumber,
+                            position: playerData.position,
+                            height: '6\'2"',
+                            weight: '180 lbs',
+                            date_of_birth: '2005-01-01',
+                            emergency_contact: 'Parent',
+                            emergency_phone: '555-0199',
+                            created_at: new Date().toISOString(),
+                            is_active: true
+                        });
+                        
+                        // Add to home team membership
+                        const memberships = db.getTable('team_memberships') || [];
+                        memberships.push({
+                            id: db.generateId(),
+                            user_id: userId,
+                            team_id: homeTeam.id,
+                            role: 'player',
+                            joined_at: new Date().toISOString(),
+                            is_active: true
+                        });
+                        db.setTable('team_memberships', memberships);
+                    });
+                    
+                    // Create away team players
+                    awayTestPlayers.forEach(playerData => {
+                        const playerId = db.generateId();
+                        const userId = db.generateId();
+                        
+                        // Create user record for player
+                        const users = db.getTable('users') || [];
+                        users.push({
+                            id: userId,
+                            username: playerData.firstName.toLowerCase() + playerData.lastName.toLowerCase() + 'away',
+                            email: `${playerData.firstName.toLowerCase()}.${playerData.lastName.toLowerCase()}.away@test.com`,
+                            password_hash: db.hashPassword('password123'),
+                            first_name: playerData.firstName,
+                            last_name: playerData.lastName,
+                            is_active: true,
+                            created_at: new Date().toISOString()
+                        });
+                        db.setTable('users', users);
+                        
+                        // Create player profile
+                        playerProfiles.push({
+                            id: playerId,
+                            user_id: userId,
+                            firstName: playerData.firstName,
+                            lastName: playerData.lastName,
+                            jersey_number: playerData.jerseyNumber,
+                            position: playerData.position,
+                            height: '6\'1"',
+                            weight: '175 lbs',
+                            date_of_birth: '2005-01-01',
+                            emergency_contact: 'Parent',
+                            emergency_phone: '555-0188',
+                            created_at: new Date().toISOString(),
+                            is_active: true
+                        });
+                        
+                        // Add to away team membership
+                        const memberships = db.getTable('team_memberships') || [];
+                        memberships.push({
+                            id: db.generateId(),
+                            user_id: userId,
+                            team_id: awayTeam.id,
+                            role: 'player',
+                            joined_at: new Date().toISOString(),
+                            is_active: true
+                        });
+                        db.setTable('team_memberships', memberships);
+                    });
+                    
+                    db.setTable('player_profiles', playerProfiles);
+                }
+                
+                // Create test game
+                const events = db.getTable('events') || [];
+                let gameId = null;
+                
+                if (events.length === 0) {
+                    const testGame = {
+                        id: db.generateId(),
+                        team_id: homeTeam.id,
+                        opponent_team_id: awayTeam.id,
+                        title: `${homeTeam.name} vs ${awayTeam.name}`,
+                        description: 'Test basketball game for stats entry',
+                        event_date: new Date().toISOString(),
+                        event_type: 'game',
+                        location: 'Test Gymnasium',
+                        created_by: user.id,
+                        created_at: new Date().toISOString(),
+                        is_active: true
+                    };
+                    
+                    events.push(testGame);
+                    db.setTable('events', events);
+                    gameId = testGame.id;
+                } else {
+                    gameId = events[0].id;
+                }
+                
+                results.innerHTML = `
+                    <div class="success">
+                        <h3>✅ Test Data Created Successfully!</h3>
+                        <p><strong>User:</strong> ${user.first_name} ${user.last_name} (${user.username})</p>
+                        <p><strong>Home Team:</strong> ${homeTeam.name}</p>
+                        <p><strong>Away Team:</strong> ${awayTeam.name}</p>
+                        <p><strong>Players:</strong> ${playerProfiles.length} players created (5 per team)</p>
+                        <p><strong>Game:</strong> Test game created with ID: ${gameId}</p>
+                    </div>
+                `;
+                
+                gameLink.innerHTML = `
+                    <a href="stats-entry.html?gameId=${gameId}" class="btn" style="background-color: #28a745;">
+                        🏀 Open Stats Entry for Test Game
+                    </a>
+                `;
+                
+            } catch (error) {
+                results.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error Creating Test Data</h3>
+                        <p>${error.message}</p>
+                        <pre>${error.stack}</pre>
+                    </div>
+                `;
+            }
+        }
+        
+        function viewData() {
+            const results = document.getElementById('results');
+            
+            try {
+                const users = db.getTable('users') || [];
+                const teams = db.getTable('teams') || [];
+                const playerProfiles = db.getTable('player_profiles') || [];
+                const events = db.getTable('events') || [];
+                const memberships = db.getTable('team_memberships') || [];
+                
+                results.innerHTML = `
+                    <div class="success">
+                        <h3>📊 Current Database Status</h3>
+                        <p><strong>Users:</strong> ${users.length}</p>
+                        <p><strong>Teams:</strong> ${teams.length}</p>
+                        <p><strong>Player Profiles:</strong> ${playerProfiles.length}</p>
+                        <p><strong>Team Memberships:</strong> ${memberships.length}</p>
+                        <p><strong>Events/Games:</strong> ${events.length}</p>
+                        
+                        <h4>Current User:</h4>
+                        <pre>${JSON.stringify(db.getCurrentUser(), null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                results.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error Viewing Data</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Auto-load current data on page load
+        viewData();
+    </script>
+</body>
+</html>

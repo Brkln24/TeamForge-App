@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Games - TeamForge</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a202c;
+            color: white;
+        }
+        .game {
+            background: #2d3748;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #3182ce;
+        }
+        .highlight {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .error {
+            color: #ef4444;
+        }
+        .success {
+            color: #22c55e;
+        }
+        pre {
+            background: #1a202c;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Game Database Debug</h1>
+    <div id="output"></div>
+
+    <script src="js/database.js"></script>
+    <script>
+        function debugGames() {
+            const db = new TeamForgeDB();
+            const output = document.getElementById('output');
+            
+            // Get all events
+            const events = db.getTable('events') || [];
+            const games = events.filter(event => event.event_type === 'game');
+            
+            output.innerHTML = `
+                <div class="game">
+                    <h3>Total Events: ${events.length}</h3>
+                    <h3>Games Found: ${games.length}</h3>
+                </div>
+            `;
+            
+            if (games.length === 0) {
+                output.innerHTML += '<div class="error">No games found in database!</div>';
+                return;
+            }
+            
+            games.forEach((game, index) => {
+                const homeTeam = db.getTeamById(game.team_id);
+                const awayTeam = game.opponent_team_id ? db.getTeamById(game.opponent_team_id) : null;
+                
+                const homePlayers = db.getTeamPlayers(game.team_id) || [];
+                const awayPlayers = game.opponent_team_id ? db.getTeamPlayers(game.opponent_team_id) || [] : [];
+                
+                output.innerHTML += `
+                    <div class="game">
+                        <h3>Game ${index + 1}: ${game.title}</h3>
+                        <p><span class="highlight">Game ID:</span> ${game.id}</p>
+                        <p><span class="highlight">Team ID:</span> ${game.team_id}</p>
+                        <p><span class="highlight">Opponent Team ID:</span> ${game.opponent_team_id || '<span class="error">NULL/MISSING</span>'}</p>
+                        
+                        <h4>Home Team:</h4>
+                        <p><span class="highlight">Name:</span> ${homeTeam ? homeTeam.name : '<span class="error">NOT FOUND</span>'}</p>
+                        <p><span class="highlight">League:</span> ${homeTeam ? homeTeam.league || '<span class="error">NO LEAGUE</span>' : 'N/A'}</p>
+                        <p><span class="highlight">Players:</span> ${homePlayers.length}</p>
+                        
+                        <h4>Away Team:</h4>
+                        <p><span class="highlight">Name:</span> ${awayTeam ? awayTeam.name : '<span class="error">NOT FOUND</span>'}</p>
+                        <p><span class="highlight">League:</span> ${awayTeam ? awayTeam.league || '<span class="error">NO LEAGUE</span>' : 'N/A'}</p>
+                        <p><span class="highlight">Players:</span> ${awayPlayers.length}</p>
+                        
+                        <h4>Stats Entry URL:</h4>
+                        <p><a href="stats-entry.html?gameId=${game.id}" style="color: #3182ce;">Open in Stats Entry</a></p>
+                        
+                        <details>
+                            <summary>Raw Game Data</summary>
+                            <pre>${JSON.stringify(game, null, 2)}</pre>
+                        </details>
+                    </div>
+                `;
+            });
+            
+            // Also show all teams
+            const teams = db.getTable('teams') || [];
+            output.innerHTML += `
+                <div class="game">
+                    <h3>All Teams in Database:</h3>
+                    ${teams.map(team => `
+                        <p><span class="highlight">${team.name}</span> (ID: ${team.id}, League: ${team.league || '<span class="error">NO LEAGUE</span>'})</p>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        // Run debug when page loads
+        document.addEventListener('DOMContentLoaded', debugGames);
+    </script>
+</body>
+</html>

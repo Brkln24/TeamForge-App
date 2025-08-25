@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Debug Results - TeamForge</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .debug-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .debug-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        pre {
+            background: #f8f8f8;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Registration Debug Results</h1>
+        
+        <div class="navigation">
+            <a href="dashboard.html" class="btn">Back to Dashboard</a>
+            <a href="register.html" class="btn">Try Registration Again</a>
+            <a href="fix-brooklyn-biometrics.html" class="btn">Fix Biometrics Tool</a>
+        </div>
+
+        <div id="debugResults">
+            <p>Loading debug information...</p>
+        </div>
+    </div>
+
+    <script>
+        function loadDebugInfo() {
+            const debugInfo = localStorage.getItem('lastRegistrationDebug');
+            const resultsDiv = document.getElementById('debugResults');
+            
+            if (!debugInfo) {
+                resultsDiv.innerHTML = '<div class="warning">No debug information found. Try registering a player first.</div>';
+                return;
+            }
+            
+            try {
+                const data = JSON.parse(debugInfo);
+                
+                let html = `<div class="success">Debug information found from: ${data.timestamp}</div>`;
+                
+                // Check for empty biometric fields
+                const emptyFields = [];
+                Object.entries(data.biometricDebug).forEach(([field, info]) => {
+                    if (info.isEmpty) {
+                        emptyFields.push(field);
+                    }
+                });
+                
+                if (emptyFields.length > 0) {
+                    html += `<div class="error">
+                        <strong>Problem Found:</strong> Empty biometric fields detected: ${emptyFields.join(', ')}
+                    </div>`;
+                } else {
+                    html += `<div class="success">All biometric fields have values</div>`;
+                }
+                
+                // Show raw form data
+                html += `<div class="debug-section">
+                    <h3>Raw Form Data Entries</h3>
+                    <pre>${JSON.stringify(data.rawFormEntries, null, 2)}</pre>
+                </div>`;
+                
+                // Show userData object
+                html += `<div class="debug-section">
+                    <h3>User Data Object</h3>
+                    <pre>${JSON.stringify(data.userData, null, 2)}</pre>
+                </div>`;
+                
+                // Show biometric debug details
+                html += `<div class="debug-section">
+                    <h3>Biometric Fields Analysis</h3>
+                    <pre>${JSON.stringify(data.biometricDebug, null, 2)}</pre>
+                </div>`;
+                
+                // Show profile data sent to database
+                html += `<div class="debug-section">
+                    <h3>Profile Data Sent to Database</h3>
+                    <pre>${JSON.stringify(data.profileData, null, 2)}</pre>
+                </div>`;
+                
+                // Show profile creation result
+                if (data.profileResult) {
+                    html += `<div class="debug-section">
+                        <h3>Profile Creation Result</h3>
+                        <pre>${JSON.stringify(data.profileResult, null, 2)}</pre>
+                    </div>`;
+                }
+                
+                // Show user ID
+                html += `<div class="debug-section">
+                    <h3>User ID</h3>
+                    <p>Created for user ID: ${data.userId}</p>
+                </div>`;
+                
+                resultsDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">Error parsing debug information: ${error.message}</div>`;
+            }
+        }
+        
+        // Clear debug info button
+        function clearDebugInfo() {
+            localStorage.removeItem('lastRegistrationDebug');
+            document.getElementById('debugResults').innerHTML = '<div class="warning">Debug information cleared.</div>';
+        }
+        
+        // Load debug info on page load
+        loadDebugInfo();
+        
+        // Add clear button
+        document.querySelector('.navigation').innerHTML += '<button onclick="clearDebugInfo()" class="btn" style="background-color: #dc3545;">Clear Debug Info</button>';
+    </script>
+</body>
+</html>

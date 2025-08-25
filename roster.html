@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roster - TeamForge</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Clean, isolated roster styles */
+        /*                 <div class="nav-icons">
+                    <a href="index.html" class="nav-icon" title="Home">🏠</a>
+                    <a href="calendar.html" class="nav-icon" title="Calendar">📅</a>
+                    <a href="roster.html" class="nav-icon active" title="Roster">👥</a>
+                    <a href="stats.html" class="nav-icon" title="Statistics">📊</a>
+                    <a href="manager.html" class="nav-icon" title="Manager">⚙️</a>
+                </div>solated roster styles */
+        .roster-container {
+            padding: 2rem 0;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .roster-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .roster-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .roster-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .team-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .team-selector label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .team-selector select {
+            padding: 0.5rem 0.75rem;
+            border: 2px solid var(--border-primary);
+            border-radius: 6px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            min-width: 200px;
+        }
+
+        .team-selector select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .roster-count {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .no-team-message {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .no-players-message {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .roster-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .player-card-new {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .player-card-new:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 8px 25px rgba(49, 130, 206, 0.3);
+        }
+
+        .player-avatar-new {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3182ce, #2c5aa0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 15px rgba(49, 130, 206, 0.4);
+        }
+
+        .avatar-initials {
+            color: white;
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .player-info-new {
+            flex: 1;
+        }
+
+        .player-name-new {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 0.5rem 0;
+        }
+
+        .player-position-new {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .player-stats-new {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            min-width: 200px;
+        }
+
+        .stat-item-new {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid var(--border-secondary);
+        }
+
+        .stat-item-new:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label-new {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .stat-value-new {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .modal-content {
+            background-color: var(--bg-secondary);
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            border: 1px solid var(--border-primary);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 1.3rem;
+        }
+
+        .close {
+            color: var(--text-secondary);
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        .close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-player-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .modal-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3182ce, #2c5aa0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .modal-avatar-text {
+            color: white;
+            font-weight: bold;
+            font-size: 1.8rem;
+        }
+
+        .modal-player-info {
+            flex: 1;
+        }
+
+        .modal-player-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 0.5rem 0;
+        }
+
+        .modal-player-position {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .biometrics-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .biometric-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .biometric-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-primary);
+        }
+
+        .biometric-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .biometric-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-secondary);
+        }
+
+        .biometric-item:last-child {
+            border-bottom: none;
+        }
+
+        .biometric-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .biometric-value {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 768px) {
+            .roster-cards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .biometrics-section {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .player-card-new {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            .player-stats-new {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <!-- Modern Firebase v12+ Modular SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+        import { getFirestore, connectFirestoreEmulator } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+        import { getAuth, connectAuthEmulator } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+        // Your TeamForge Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCrAPyjI91mdpOXgrUO6vKP83TbhMfQGKI",
+            authDomain: "teamforgeproject-37f27.firebaseapp.com",
+            projectId: "teamforgeproject-37f27",
+            storageBucket: "teamforgeproject-37f27.firebasestorage.app",
+            messagingSenderId: "625240400602",
+            appId: "1:625240400602:web:c24e30c9ba4f28b0bafbe3",
+            measurementId: "G-V2GBMH5H88"
+        };
+
+        try {
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+            
+            // Make Firebase available globally for testing
+            window.firebaseApp = app;
+            window.firebaseDB = db;
+            window.firebaseAuth = auth;
+            window.firebaseConfig = firebaseConfig;
+            
+            console.log('🔥 Firebase v12+ initialized successfully');
+            console.log('📊 Project ID:', firebaseConfig.projectId);
+            
+            // Mark Firebase as loaded
+            window.firebaseLoaded = true;
+            
+        } catch (error) {
+            console.error('❌ Firebase initialization failed:', error);
+            window.firebaseError = error;
+        }
+    </script>
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <nav class="navbar">
+                <!-- Navigation will be populated by JavaScript -->
+            </nav>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="roster-container">
+                    <div class="roster-header">
+                        <h1 class="roster-title">Team Roster</h1>
+                        <div class="roster-meta">
+                            <div class="team-selector">
+                                <label for="team-select">Select Team:</label>
+                                <select id="team-select" onchange="loadTeamRoster()">
+                                    <option value="">Choose a team...</option>
+                                </select>
+                            </div>
+                            <span class="roster-count" id="roster-count">0 Active Players</span>
+                        </div>
+                    </div>
+                    
+                    <div class="roster-cards-grid" id="roster-cards-grid">
+                        <!-- Player cards will be populated by JavaScript -->
+                        <div class="no-team-message" id="no-team-message" style="display: none;">
+                            <p>Please select a team to view the roster.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div id="playerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Player Details</h2>
+                <button class="close" onclick="closePlayerModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-player-header">
+                    <div class="modal-avatar">
+                        <span class="modal-avatar-text" id="modalAvatarText">BR</span>
+                    </div>
+                    <div class="modal-player-info">
+                        <h3 class="modal-player-name" id="modalPlayerName">Brooklyn Ridley</h3>
+                        <p class="modal-player-position" id="modalPlayerPosition">Point Guard</p>
+                    </div>
+                </div>
+                
+                <div class="biometrics-section">
+                    <div class="biometric-group">
+                        <h4 class="biometric-title">Physical Stats</h4>
+                        <div class="biometric-list">
+                            <div class="biometric-item">
+                                <span class="biometric-label">Height</span>
+                                <span class="biometric-value" id="modalHeight">163cm</span>
+                            </div>
+                            <div class="biometric-item">
+                                <span class="biometric-label">Weight</span>
+                                <span class="biometric-value" id="modalWeight">73kg</span>
+                            </div>
+                            <div class="biometric-item">
+                                <span class="biometric-label">Age</span>
+                                <span class="biometric-value" id="modalAge">17</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="biometric-group">
+                        <h4 class="biometric-title">Measurements</h4>
+                        <div class="biometric-list">
+                            <div class="biometric-item">
+                                <span class="biometric-label">Wingspan</span>
+                                <span class="biometric-value" id="modalWingspan">166cm</span>
+                            </div>
+                            <div class="biometric-item">
+                                <span class="biometric-label">Vertical Jump</span>
+                                <span class="biometric-value" id="modalVertical">83cm</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize page when DOM loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTeams();
+        });
+
+        // Load all teams for the dropdown
+        function loadTeams() {
+            try {
+                const teams = window.db.getTeams();
+                const teamSelect = document.getElementById('team-select');
+                
+                // Clear existing options except the first one
+                teamSelect.innerHTML = '<option value="">Choose a team...</option>';
+                
+                // Add teams to dropdown
+                teams.forEach(team => {
+                    const option = document.createElement('option');
+                    option.value = team.id;
+                    option.textContent = team.name;
+                    teamSelect.appendChild(option);
+                });
+                
+                // Show no team message initially
+                showNoTeamMessage();
+            } catch (error) {
+                console.error('Error loading teams:', error);
+            }
+        }
+
+        // Load roster for selected team
+        function loadTeamRoster() {
+            const teamSelect = document.getElementById('team-select');
+            const selectedTeamId = teamSelect.value;
+            
+            if (!selectedTeamId) {
+                showNoTeamMessage();
+                return;
+            }
+            
+            try {
+                // Get team players only (not coaches)
+                const teamPlayers = window.db.getTeamPlayers(selectedTeamId);
+                
+                const rosterContainer = document.getElementById('roster-cards-grid');
+                const rosterCount = document.getElementById('roster-count');
+                let noTeamMessage = document.getElementById('no-team-message');
+                
+                // Clear existing cards but preserve the no-team-message
+                Array.from(rosterContainer.children).forEach(child => {
+                    if (child.id !== 'no-team-message') {
+                        rosterContainer.removeChild(child);
+                    }
+                });
+                
+                // Ensure no-team-message exists
+                if (!noTeamMessage) {
+                    noTeamMessage = document.createElement('div');
+                    noTeamMessage.id = 'no-team-message';
+                    noTeamMessage.className = 'no-team-message';
+                    noTeamMessage.innerHTML = '<p>Please select a team to view the roster.</p>';
+                    rosterContainer.appendChild(noTeamMessage);
+                }
+                
+                // Hide no team message
+                noTeamMessage.style.display = 'none';
+                
+                if (teamPlayers.length === 0) {
+                    const noPlayersDiv = document.createElement('div');
+                    noPlayersDiv.className = 'no-players-message';
+                    noPlayersDiv.innerHTML = '<p>No players found for this team.</p>';
+                    rosterContainer.appendChild(noPlayersDiv);
+                    rosterCount.textContent = '0 Active Players';
+                    return;
+                }
+                
+                // Create player cards
+                teamPlayers.forEach(player => {
+                    const playerCard = createPlayerCard(player);
+                    if (playerCard.children.length > 0) { // Only add if card was created successfully
+                        rosterContainer.appendChild(playerCard);
+                    }
+                });
+                
+                // Update player count
+                rosterCount.textContent = `${teamPlayers.length} Active Player${teamPlayers.length !== 1 ? 's' : ''}`;
+                
+            } catch (error) {
+                console.error('Error loading team roster:', error);
+            }
+        }
+
+        // Create a player card element
+        function createPlayerCard(member) {
+            // Debug: Log the full member object to see what data we're receiving
+            console.log('Creating card for member:', member);
+            console.log('Member biometric fields:', {
+                height_cm: member.height_cm,
+                weight_kg: member.weight_kg,
+                wingspan_cm: member.wingspan_cm,
+                vertical_cm: member.vertical_cm,
+                age: member.age
+            });
+            
+            // Extract user data - member might have nested structure
+            const user = member.first_name ? member : (member.user || member);
+            
+            if (!user || (!user.name && !user.first_name)) {
+                console.warn('Invalid user data:', member);
+                return document.createElement('div'); // Return empty div if no valid user data
+            }
+            
+            // Create full name from first_name and last_name, or use name if available
+            const fullName = user.name || `${user.first_name} ${user.last_name}`;
+            const initials = getInitials(fullName);
+            const position = member.position || user.position || 'Player'; // Check member.position first
+            
+            // Updated to use member directly since getTeamPlayers() flattens the data
+            const stats = {
+                height: member.height_cm ? `${member.height_cm} cm` : 'N/A',
+                weight: member.weight_kg ? `${member.weight_kg} kg` : 'N/A',
+                age: member.age || 'N/A',
+                wingspan: member.wingspan_cm ? `${member.wingspan_cm} cm` : 'N/A',
+                vertical: member.vertical_cm ? `${member.vertical_cm} cm` : 'N/A'
+            };
+            
+            console.log('Processed stats for display:', stats);
+            
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'player-card-new';
+            cardDiv.onclick = () => openPlayerModal(fullName, initials, position, stats);
+            
+            cardDiv.innerHTML = `
+                <div class="player-avatar-new">
+                    <span class="avatar-initials">${initials}</span>
+                </div>
+                <div class="player-info-new">
+                    <h3 class="player-name-new">${fullName}</h3>
+                    <p class="player-position-new">${position}</p>
+                </div>
+                <div class="player-stats-new">
+                    <div class="stat-item-new">
+                        <span class="stat-label-new">HEIGHT</span>
+                        <span class="stat-value-new">${stats.height}</span>
+                    </div>
+                    <div class="stat-item-new">
+                        <span class="stat-label-new">WEIGHT</span>
+                        <span class="stat-value-new">${stats.weight}</span>
+                    </div>
+                    <div class="stat-item-new">
+                        <span class="stat-label-new">AGE</span>
+                        <span class="stat-value-new">${stats.age}</span>
+                    </div>
+                    <div class="stat-item-new">
+                        <span class="stat-label-new">WINGSPAN</span>
+                        <span class="stat-value-new">${stats.wingspan}</span>
+                    </div>
+                    <div class="stat-item-new">
+                        <span class="stat-label-new">VERTICAL</span>
+                        <span class="stat-value-new">${stats.vertical}</span>
+                    </div>
+                </div>
+            `;
+            
+            return cardDiv;
+        }
+
+        // Get initials from name
+        function getInitials(name) {
+            return name.split(' ').map(word => word.charAt(0).toUpperCase()).join('');
+        }
+
+        // Show no team selected message
+        function showNoTeamMessage() {
+            const rosterContainer = document.getElementById('roster-cards-grid');
+            const rosterCount = document.getElementById('roster-count');
+            let noTeamMessage = document.getElementById('no-team-message');
+            
+            // Clear all content first
+            rosterContainer.innerHTML = '';
+            
+            // Recreate the no team message if it doesn't exist
+            if (!noTeamMessage) {
+                noTeamMessage = document.createElement('div');
+                noTeamMessage.id = 'no-team-message';
+                noTeamMessage.className = 'no-team-message';
+                noTeamMessage.innerHTML = '<p>Please select a team to view the roster.</p>';
+            }
+            
+            // Add the no team message back
+            rosterContainer.appendChild(noTeamMessage);
+            noTeamMessage.style.display = 'block';
+            rosterCount.textContent = '0 Active Players';
+        }
+
+        function openPlayerModal(name, initials, position, stats) {
+            document.getElementById('modalPlayerName').textContent = name;
+            document.getElementById('modalPlayerPosition').textContent = position;
+            document.getElementById('modalAvatarText').textContent = initials;
+            document.getElementById('modalHeight').textContent = stats.height;
+            document.getElementById('modalWeight').textContent = stats.weight;
+            document.getElementById('modalAge').textContent = stats.age;
+            document.getElementById('modalWingspan').textContent = stats.wingspan;
+            document.getElementById('modalVertical').textContent = stats.vertical;
+            
+            document.getElementById('playerModal').style.display = 'block';
+        }
+
+        function closePlayerModal() {
+            document.getElementById('playerModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('playerModal');
+            if (event.target == modal) {
+                closePlayerModal();
+            }
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closePlayerModal();
+            }
+        });
+    </script>
+
+    <script src="js/database.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>
