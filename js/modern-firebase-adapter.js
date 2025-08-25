@@ -426,3 +426,4 @@ setTimeout(() => {
         // Keep the original DatabaseManager
     }
 }, 1000); // Give Firebase module time to load
+
