@@ -418,11 +418,18 @@ class ModernFirebaseDatabaseManager extends DatabaseManager {
 // Replace the global database instance if Firebase is available
 // Wait for Firebase module to load
 setTimeout(() => {
-    if (window.firebaseApp && window.firebaseDB && window.firebaseAuth) {
-        console.log('🔥 Initializing Modern Firebase Database Manager...');
-        window.db = new ModernFirebaseDatabaseManager();
-    } else {
-        console.log('📱 Firebase not available, using localStorage Database Manager');
-        // Keep the original DatabaseManager
+    try {
+        if (window.firebaseApp && window.firebaseDB && window.firebaseAuth) {
+            console.log('🔥 Initializing Modern Firebase Database Manager...');
+            window.db = new ModernFirebaseDatabaseManager();
+            console.log('✅ Modern Firebase Database Manager initialized successfully');
+        } else {
+            console.log('📱 Firebase not available, using localStorage Database Manager');
+            // Keep the original DatabaseManager
+        }
+    } catch (error) {
+        console.error('❌ Error initializing Modern Firebase Database Manager:', error);
+        console.log('📱 Falling back to localStorage Database Manager');
+        // The original database manager will remain active
     }
 }, 1000); // Give Firebase module time to load

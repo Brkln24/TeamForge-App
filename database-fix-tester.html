@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Fix Tester</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-result { padding: 10px; margin: 5px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Database Fix Verification</h1>
+    <div id="results"></div>
+    
+    <!-- Modern Firebase v12+ Modular SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCrAPyjI91mdpOXgrUO6vKP83TbhMfQGKI",
+            authDomain: "teamforgeproject-37f27.firebaseapp.com",
+            projectId: "teamforgeproject-37f27",
+            storageBucket: "teamforgeproject-37f27.firebasestorage.app",
+            messagingSenderId: "625240400602",
+            appId: "1:625240400602:web:c24e30c9ba4f28b0bafbe3",
+            measurementId: "G-V2GBMH5H88"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.firebaseApp = app;
+        window.firebaseDB = getFirestore(app);
+        window.firebaseAuth = getAuth(app);
+        window.firebaseLoaded = true;
+    </script>
+    
+    <script src="js/database.js"></script>
+    <script src="js/modern-firebase-adapter.js"></script>
+    
+    <script>
+        function addResult(message, type) {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            document.getElementById('results').appendChild(div);
+        }
+
+        function runTests() {
+            addResult('🔄 Starting database initialization tests...', 'info');
+            
+            setTimeout(() => {
+                try {
+                    // Test 1: Check if database exists
+                    if (window.db) {
+                        addResult('✅ Database instance exists', 'success');
+                        addResult(`📊 Database type: ${window.db.constructor.name}`, 'info');
+                    } else {
+                        addResult('❌ Database instance not found', 'error');
+                        return;
+                    }
+
+                    // Test 2: Check syncLocalToFirebase function
+                    if (typeof window.db.syncLocalToFirebase === 'function') {
+                        addResult('✅ syncLocalToFirebase function exists', 'success');
+                    } else {
+                        addResult('❌ syncLocalToFirebase function missing', 'error');
+                    }
+
+                    // Test 3: Test getTable with empty database
+                    try {
+                        const events = window.db.getTable('events');
+                        addResult(`✅ getTable('events') works: ${Array.isArray(events) ? 'Array' : typeof events}`, 'success');
+                    } catch (e) {
+                        addResult(`❌ getTable('events') failed: ${e.message}`, 'error');
+                    }
+
+                    // Test 4: Test database migration methods
+                    try {
+                        window.db.migrateGameConfirmationStatus();
+                        addResult('✅ migrateGameConfirmationStatus works', 'success');
+                    } catch (e) {
+                        addResult(`❌ migrateGameConfirmationStatus failed: ${e.message}`, 'error');
+                    }
+
+                    // Test 5: Test clearFakeNotes
+                    try {
+                        window.db.clearFakeNotes();
+                        addResult('✅ clearFakeNotes works', 'success');
+                    } catch (e) {
+                        addResult(`❌ clearFakeNotes failed: ${e.message}`, 'error');
+                    }
+
+                    // Test 6: Connection status
+                    if (typeof window.db.getConnectionStatus === 'function') {
+                        const status = window.db.getConnectionStatus();
+                        addResult(`✅ Connection status: ${JSON.stringify(status)}`, 'info');
+                    }
+
+                    addResult('🎉 All tests completed!', 'success');
+                    
+                } catch (error) {
+                    addResult(`❌ Test suite failed: ${error.message}`, 'error');
+                }
+            }, 2000);
+        }
+
+        // Run tests when page loads
+        window.addEventListener('load', runTests);
+    </script>
+</body>
+</html>
